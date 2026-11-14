@@ -35,12 +35,14 @@ module mic_adc_spi #(
     input  wire        adc_miso              // MIC pin 3  (MISO), already synchronised
 );
 
-    // SCLK is held in two identical registers.  sclk_pad drives only the pin, so it
-    // can be packed into the I/O cell (IOB TRUE in the XDC) and leaves the chip at
-    // the same instant as the other SPI outputs.  sclk_q is the copy the state
-    // machine reads back.  KEEP stops synthesis from merging the two.
-    (* keep = "true" *) reg sclk_pad;
-    (* keep = "true" *) reg sclk_q;
+    // SCLK is held in two registers.  sclk_pad drives only the pin, so it can be
+    // packed into the I/O cell (IOB TRUE in the XDC) and leaves the chip at the same
+    // instant as the other SPI outputs.  sclk_nq holds the complement and is the copy
+    // the state machine reads back.  Storing the complement makes the two registers
+    // logically different, so synthesis cannot merge them into one (it did merge two
+    // identical copies despite KEEP); DONT_TOUCH is a second guard.
+    (* dont_touch = "true" *) reg sclk_pad;
+    (* dont_touch = "true" *) reg sclk_nq;     // = ~sclk_pad
     assign adc_sclk = sclk_pad;
 
     localparam integer HALF = SCLK_DIV / 2;
@@ -59,7 +61,7 @@ module mic_adc_spi #(
         if (rst) begin
             st       <= S_IDLE;
             adc_cs_n <= 1'b1;
-            sclk_pad <= 1'b1; sclk_q <= 1'b1;
+            sclk_pad <= 1'b1; sclk_nq <= 1'b0;
             busy     <= 1'b0;
             div      <= 8'd0;
             nbits    <= 5'd0;
@@ -69,7 +71,7 @@ module mic_adc_spi #(
             case (st)
                 S_IDLE: begin
                     adc_cs_n <= 1'b1;
-                    sclk_pad <= 1'b1; sclk_q <= 1'b1;
+                    sclk_pad <= 1'b1; sclk_nq <= 1'b0;
                     if (start) begin
                         adc_cs_n <= 1'b0;             // sample instant
                         busy     <= 1'b1;
@@ -81,13 +83,13 @@ module mic_adc_spi #(
                 S_XFER: begin
                     if (div == HALF - 1) begin
                         div <= 8'd0;
-                        if (sclk_q) begin
+                        if (!sclk_nq) begin
                             // falling edge: capture the bit launched one period ago
-                            sclk_pad <= 1'b0; sclk_q <= 1'b0;
+                            sclk_pad <= 1'b0; sclk_nq <= 1'b1;
                             sh       <= {sh[14:0], adc_miso};
                             nbits    <= nbits + 5'd1;
                         end else begin
-                            sclk_pad <= 1'b1; sclk_q <= 1'b1;         // rising edge
+                            sclk_pad <= 1'b1; sclk_nq <= 1'b0;         // rising edge
                             if (nbits == 5'd16)
                                 st <= S_TAIL;
                         end

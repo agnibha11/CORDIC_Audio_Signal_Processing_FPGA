@@ -15,9 +15,8 @@ Companion documents in this folder:
 **Status, stated plainly.** Every block is verified in simulation (12 self-checking test benches,
 section 9, passing in both Vivado XSim and Icarus Verilog), and the complete signal path is
 proven bit-for-bit equal to the Python reference model. The design has been synthesised and
-implemented in Vivado 2025.2 and a bitstream generated (section 10.6). The first implementation
-missed timing by 0.276 ns on one display path, which has since been pipelined; closure is to be
-confirmed by a re-run. The design **has not yet been run on the board**; `TESTING.md` is the
+implemented in Vivado 2025.2 and a bitstream generated, with all timing constraints met at
+100 MHz (section 10.6). The design **has not yet been run on the board**; `TESTING.md` is the
 procedure for that. Wherever a number below comes from the model or from simulation, it says so.
 
 ---
@@ -1068,9 +1067,11 @@ it and the fix is another register.
 All serial and VGA outputs are driven from flip-flops packed into the I/O cells, so they leave
 the chip with matched delays. The SPI clocks need one extra register each for this: a flip-flop
 in an I/O cell can drive only its pin, but each state machine reads its own SCLK back to decide
-which edge comes next. Each master therefore keeps two identical registers, `sclk_pad` for the
-pin and `sclk_q` for the logic, marked KEEP so that synthesis does not merge them. (The first
-build had a single register and Vivado reported it could not be packed, Place 30-722.)
+which edge comes next. Each master therefore keeps two registers: `sclk_pad` for the pin and
+`sclk_nq`, holding the complement, for the logic. The complement matters: with two identical
+copies marked KEEP, synthesis still merged them into one register and Vivado again reported that
+it could not be packed (Place 30-722). Two registers holding different values cannot be merged;
+DONT_TOUCH on both is a second guard.
 
 ### 8.16 Numerics reference
 
@@ -1160,8 +1161,7 @@ All run with Icarus Verilog 12 (`iverilog -g2012`); the same files run in Vivado
 
 ### 9.3 What is not verified
 
-* **No hardware run** yet, and timing closure after the last fix is still to be confirmed (see the
-  status note at the top).
+* **No hardware run** yet (see the status note at the top).
 * The analog behaviour of the Pmods (microphone level and compression, amplifier loudness, DAC
   settling) is not modelled; the benches cover the digital interfaces.
 * The pin numbering of ports JC and JD was taken from the ZedBoard schematic's net order
@@ -1260,7 +1260,7 @@ From `scripts/build_bitstream.tcl` (Vivado 2025.2, default strategies, reports i
 
 | Resource | Design | VIO + debug hub | Total | of device |
 |---|---|---|---|---|
-| Slice LUTs | 3 514 | 1 553 | 5 067 | 9.5 % |
+| Slice LUTs | 3 508 | 1 552 | 5 060 | 9.5 % |
 | Slice registers | 3 418 | 2 800 | 6 218 | 5.8 % |
 | DSP48E1 | 20 | 0 | 20 | 9.1 % |
 | RAMB36 | 3 | 0 | 3 | 2.1 % |
@@ -1269,12 +1269,12 @@ From `scripts/build_bitstream.tcl` (Vivado 2025.2, default strategies, reports i
 
 | Block | LUTs | Registers | DSP48E1 |
 |---|---|---|---|
-| `fm_dsp_core` | 1 645 | 1 948 | 11 |
-| `cordic_engine` (inside it) | 374 | 81 | 0 |
+| `fm_dsp_core` | 1 643 | 1 948 | 11 |
+| `cordic_engine` (inside it) | 372 | 81 | 0 |
 | `awgn_gen` (inside it) | 135 | 141 | 1 |
 | `audio_lpf` x 2 (inside it) | 509 | 1 215 | 0 |
 | `fidelity_meter` | 327 | 306 | 2 |
-| `param_controller`, `recip_divider` | 397 | 244 | 6 |
+| `param_controller`, `recip_divider` | 389 | 242 | 6 |
 | `vga_timing`, `vga_scope_render` | 598 | 341 | 1 |
 | `capture_scope_ram` | 119 | 32 | 0 (3 RAMB36) |
 
@@ -1282,11 +1282,14 @@ The two audio filters hold most of the registers: each keeps 16 delay-line words
 The VIO alone is larger than the CORDIC, the noise generator and the meter together; it is a
 bring-up tool and can be left out (build without `USE_VIO`).
 
-Power estimate: 0.220 W on chip (0.112 W dynamic, 0.108 W static), junction 27.5 °C. The
+Power estimate: 0.220 W on chip (0.113 W dynamic, 0.108 W static), junction 27.5 °C. The
 estimate uses default switching activity and Vivado rates its confidence as low.
 
-Timing: WHS +0.073 ns (hold met). Setup missed by 0.276 ns on the display path described in
-section 8.15, now fixed; the value after the fix is to be filled in from the next run.
+Timing (post-route, slow corner, 10 ns): setup WNS +0.113 ns, hold WHS +0.056 ns, no failing
+endpoints; all constraints met. The critical path is in the receiver's `audio_lpf`, from the
+stage counter through the accumulator adder and rounding to the saturated output. If a future
+change pushes it negative, register `nv` before the saturation (one more clock per sample, of
+which the filter has 2000).
 
 ---
 
@@ -1464,7 +1467,7 @@ screen text, edit `gen_text_layout.py`, run it, and update the field positions i
 
 **Limits, honestly.**
 
-* Not yet run on hardware; timing closure after the last fix to be confirmed (see top).
+* Not yet run on hardware (see top).
 * The channel is simulated inside the chip; the DAC output is not received back through an ADC.
   The loop therefore measures the algorithm and the simulated channel, not the analog parts.
 * The receiver knows the transmitter's carrier phase (same chip), which is what makes the simple
