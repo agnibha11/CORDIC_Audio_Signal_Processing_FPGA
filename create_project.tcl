@@ -1,5 +1,5 @@
 # ============================================================================
-#  create_project.tcl -- (re)creates the Vivado project CORDIC.xpr in place
+#  create_project.tcl -- creates the Vivado project vivado/CORDIC.xpr
 #
 #  Usage (either):
 #     vivado -mode batch -source create_project.tcl          (from this folder)
@@ -9,23 +9,24 @@
 #     CORDIC.srcs/sources_1/new/*.v      RTL
 #     CORDIC.srcs/constrs_1/new/*.xdc    constraints
 #     CORDIC.srcs/sim_1/new/*.v *.mem    test benches, models, vectors
-#  so Vivado adopts them without copying.  The script also generates the
+#  and the project in vivado/ references them without copying.  The script also generates the
 #  VIO debug core (vio_0) and sets USE_VIO for synthesis only, so the same
 #  top level simulates without any IP.
 # ============================================================================
 set proj_name  "CORDIC"
-set proj_dir   [file normalize [file dirname [info script]]]
+set root       [file normalize [file dirname [info script]]]
+set proj_dir   "$root/vivado"
 set part       "xc7z020clg484-1"
 set top        "cordic_fm_top"
 
-cd $proj_dir
-# The RTL lives inside CORDIC.srcs, i.e. inside the project's own folder tree, so the
-# project is never created with -force (which may clear that tree).  If a project is
-# already there, it is opened as it is; to rebuild it from scratch (for example after
-# the VIO probe list changed) delete CORDIC.xpr and the generated CORDIC.* folders
-# first:   git clean -fdX     (removes only what .gitignore lists)
+# The project lives in its own folder, vivado/, and references the sources in
+# CORDIC.srcs/ in place.  Vivado refuses to create a project named CORDIC next to
+# an existing CORDIC.srcs folder, and -force must not be used because it may clear
+# that folder.  To rebuild the project from scratch (for example after the VIO
+# probe list changed), close it and delete the vivado/ folder.
+cd $root
 if {[file exists "$proj_dir/$proj_name.xpr"]} {
-    puts "CORDIC.xpr already exists -- opening it.  Run 'git clean -fdX' first for a fresh project."
+    puts "vivado/CORDIC.xpr already exists -- opening it.  Delete vivado/ first for a fresh project."
     open_project "$proj_dir/$proj_name.xpr"
     return
 }
@@ -37,18 +38,18 @@ set_property default_lib xil_defaultlib [current_project]
 catch { set_property board_part em.avnet.com:zed:part0:1.4 [current_project] }
 
 # ---------------- design sources ----------------
-set rtl [glob -nocomplain $proj_dir/CORDIC.srcs/sources_1/new/*.v]
+set rtl [glob -nocomplain $root/CORDIC.srcs/sources_1/new/*.v]
 add_files -norecurse -fileset sources_1 $rtl
 set_property top $top [get_filesets sources_1]
 set_property verilog_define {USE_VIO=1} [get_filesets sources_1]
 update_compile_order -fileset sources_1
 
 # ---------------- constraints ----------------
-add_files -norecurse -fileset constrs_1 [glob $proj_dir/CORDIC.srcs/constrs_1/new/*.xdc]
+add_files -norecurse -fileset constrs_1 [glob $root/CORDIC.srcs/constrs_1/new/*.xdc]
 
 # ---------------- simulation sources ----------------
-set sim [concat [glob -nocomplain $proj_dir/CORDIC.srcs/sim_1/new/*.v] \
-                [glob -nocomplain $proj_dir/CORDIC.srcs/sim_1/new/*.mem]]
+set sim [concat [glob -nocomplain $root/CORDIC.srcs/sim_1/new/*.v] \
+                [glob -nocomplain $root/CORDIC.srcs/sim_1/new/*.mem]]
 add_files -norecurse -fileset sim_1 $sim
 set_property top tb_cordic_fm_system [get_filesets sim_1]
 set_property -name {xsim.simulate.runtime} -value {all} -objects [get_filesets sim_1]

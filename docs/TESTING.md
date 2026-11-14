@@ -43,7 +43,7 @@ Either in Vivado (`source scripts/run_sims.tcl`, about 30 minutes) or with Icaru
 
 | Check | Pass condition | If not |
 |---|---|---|
-| Bitstream written | `CORDIC.runs/impl_1/cordic_fm_top.bit` and `.ltx` exist | read the first error in the Vivado log |
+| Bitstream written | `vivado/CORDIC.runs/impl_1/cordic_fm_top.bit` and `.ltx` exist | read the first error in the Vivado log |
 | Setup timing | WNS (worst negative slack) is 0 or positive | the report names the failing path; note source and destination register and add a pipeline register there, or ask for help with the path name |
 | Hold timing | WHS is 0 or positive | normally fixed automatically by the router |
 | DRC | no errors; warnings about the unused processor (`ZPS7-1`) and inside `dbg_hub` are expected | read the DRC message |
@@ -353,7 +353,7 @@ deterministic and bit-exact with the model, large deviations mean a real fault.
 | Symptom | Look at |
 |---|---|
 | VIO probes have no names | the `.ltx` file was not given when programming |
-| VIO core has the wrong number of probes after pulling new code | stale project: `git clean -fdX`, `source create_project.tcl`, rebuild |
+| VIO core has the wrong number of probes after pulling new code | stale project: close it, delete the `vivado/` folder, `source create_project.tcl`, rebuild |
 | Picture rolls or monitor says "out of range" | the monitor does not accept 59.5 Hz at 640 x 480; try another monitor |
 | Everything works but the screen text is shifted by half a character | not a fault: the picture is delayed by half a pixel by design |
 | Top pane flat, `SRC = MIC` | step 8: ADC code; is the MIC in JA top row |

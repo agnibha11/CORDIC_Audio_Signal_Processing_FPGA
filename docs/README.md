@@ -1355,12 +1355,12 @@ The repository folder name must not contain spaces.
 ```tcl
 # Vivado Tcl console
 cd <repository folder>
-source create_project.tcl            ;# creates CORDIC.xpr and the VIO core vio_0
+source create_project.tcl            ;# creates vivado/CORDIC.xpr and the VIO core vio_0
 source scripts/run_sims.tcl          ;# all 12 benches in XSim, PASS/FAIL table (about 30 min)
 source scripts/build_bitstream.tcl   ;# synthesis, implementation, bitstream, reports/
 ```
 
-Program with **both** files from `CORDIC.runs/impl_1/`: `cordic_fm_top.bit` and
+Program with **both** files from `vivado/CORDIC.runs/impl_1/`: `cordic_fm_top.bit` and
 `cordic_fm_top.ltx` (the probe names; without it the VIO probes appear unnamed).
 
 `create_project.tcl` never overwrites an existing project. To rebuild from scratch (needed if the
