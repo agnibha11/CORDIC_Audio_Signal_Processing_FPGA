@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  model_adcs7476.v -- behavioural model of the Pmod MIC3 ADC for simulation
+//  model_adcs7476.v -- behavioural model of the Pmod MIC ADC for simulation
 //
 //  Reproduces the datasheet serial behaviour (ADCS7476, section 7.3):
 //   * the analog input is sampled at the falling edge of CS

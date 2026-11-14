@@ -9,29 +9,29 @@ import os
 from gen_font import ORDER
 
 ROWS = {
- 0: " CORDIC AUDIO MODULATOR   ZEDBOARD  K=  ",
- 1: " ORIGINAL=GREEN  DEMOD=YELLOW           ",
-12: " MODULATED OUTPUT=CYAN  DAC-A           ",
+ 0: " CORDIC RADIO LINK ON A CHIP        K=  ",
+ 1: " ORIGINAL=GREEN  RECOVERED=YELLOW       ",
+12: " CHANNEL=CYAN (DAC-A)   TB=X            ",
 24: " FC   =       HZ [1/4]  MODE =       [8]",
 25: " BETA =          [2/5]  SRC  =       [7]",
-26: " FM   =       HZ [3/6]  TB   =       [9]",
+26: " FM   =       HZ [3/6]  CNR  =     [9/E]",
 27: " AMP  =          [A/B]  HOLD =       [C]",
 28: " DEV  =         HZ      STEP =       [F]",
-29: " SNR  =    DB (LOOPBACK) DACB=       [E]",
+29: " SNR  =    DB           MON  =       [D]",
 }
-# alternative row 1 when the overlay shows the error instead of the demodulated signal
+# alternative row 1 when the overlay shows the error instead of the recovered signal
 ROW1_ALT = " ORIGINAL=GREEN  ERRORX16=RED           "
 
 FIELDS = """
   row 0  col 38      : last key (hex digit) while a key is held
   row 1  col 36..39  : CLIP
-  row 12 col 31..33  : REC      col 36..39 : MUTE
+  row 12 col 28      : time base (1/2/4)   col 31..33 : REC   col 36..39 : MUTE
   row 24 col 8..12   : fc  (5)  col 31..33 : mode (3)
   row 25 col 8..13   : beta(6)  col 31..34 : source (4)
-  row 26 col 8..12   : fm  (5)  col 31..32 : time base (2)
+  row 26 col 8..12   : fm  (5)  col 31..34 : C/N (4: "24DB" or " OFF")
   row 27 col 8..11   : amp (4)  col 31..34 : hold (4)
   row 28 col 8..14   : dev (7)  col 31..34 : step (4)
-  row 29 col 8..9    : snr (2)  col 31..34 : dacb (4)
+  row 29 col 8..9    : snr (2)  col 31..34 : monitor (4)
 """
 
 def code(ch):

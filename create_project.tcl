@@ -19,7 +19,17 @@ set part       "xc7z020clg484-1"
 set top        "cordic_fm_top"
 
 cd $proj_dir
-create_project -force $proj_name $proj_dir -part $part
+# The RTL lives inside CORDIC.srcs, i.e. inside the project's own folder tree, so the
+# project is never created with -force (which may clear that tree).  If a project is
+# already there, it is opened as it is; to rebuild it from scratch (for example after
+# the VIO probe list changed) delete CORDIC.xpr and the generated CORDIC.* folders
+# first:   git clean -fdX     (removes only what .gitignore lists)
+if {[file exists "$proj_dir/$proj_name.xpr"]} {
+    puts "CORDIC.xpr already exists -- opening it.  Run 'git clean -fdX' first for a fresh project."
+    open_project "$proj_dir/$proj_name.xpr"
+    return
+}
+create_project $proj_name $proj_dir -part $part
 set_property target_language Verilog [current_project]
 set_property simulator_language Mixed [current_project]
 set_property default_lib xil_defaultlib [current_project]
@@ -46,14 +56,14 @@ set_property -name {xsim.simulate.log_all_signals} -value {false} -objects [get_
 update_compile_order -fileset sim_1
 
 # ---------------- VIO debug core ----------------
-# 20 input probes, 9 output probes; widths must match cordic_fm_top.v
+# 20 input probes, 10 output probes; widths must match cordic_fm_top.v
 create_ip -name vio -vendor xilinx.com -library ip -version 3.0 -module_name vio_0
 set_property -dict [list \
     CONFIG.C_NUM_PROBE_IN   {20} \
-    CONFIG.C_NUM_PROBE_OUT  {9}  \
+    CONFIG.C_NUM_PROBE_OUT  {10}  \
     CONFIG.C_PROBE_IN0_WIDTH  {7}  CONFIG.C_PROBE_IN1_WIDTH  {7}  CONFIG.C_PROBE_IN2_WIDTH  {6}  \
     CONFIG.C_PROBE_IN3_WIDTH  {6}  CONFIG.C_PROBE_IN4_WIDTH  {2}  CONFIG.C_PROBE_IN5_WIDTH  {1}  \
-    CONFIG.C_PROBE_IN6_WIDTH  {1}  CONFIG.C_PROBE_IN7_WIDTH  {4}  CONFIG.C_PROBE_IN8_WIDTH  {12} \
+    CONFIG.C_PROBE_IN6_WIDTH  {5}  CONFIG.C_PROBE_IN7_WIDTH  {4}  CONFIG.C_PROBE_IN8_WIDTH  {12} \
     CONFIG.C_PROBE_IN9_WIDTH  {16} CONFIG.C_PROBE_IN10_WIDTH {16} CONFIG.C_PROBE_IN11_WIDTH {16} \
     CONFIG.C_PROBE_IN12_WIDTH {48} CONFIG.C_PROBE_IN13_WIDTH {48} CONFIG.C_PROBE_IN14_WIDTH {16} \
     CONFIG.C_PROBE_IN15_WIDTH {7}  CONFIG.C_PROBE_IN16_WIDTH {48} CONFIG.C_PROBE_IN17_WIDTH {8}  \
@@ -61,8 +71,9 @@ set_property -dict [list \
     CONFIG.C_PROBE_OUT0_WIDTH {1}  CONFIG.C_PROBE_OUT1_WIDTH {7}  CONFIG.C_PROBE_OUT2_WIDTH {7}  \
     CONFIG.C_PROBE_OUT3_WIDTH {6}  CONFIG.C_PROBE_OUT4_WIDTH {6}  CONFIG.C_PROBE_OUT5_WIDTH {2}  \
     CONFIG.C_PROBE_OUT6_WIDTH {1}  CONFIG.C_PROBE_OUT7_WIDTH {1}  CONFIG.C_PROBE_OUT8_WIDTH {11} \
-    CONFIG.C_PROBE_OUT0_INIT_VAL {0x0} CONFIG.C_PROBE_OUT1_INIT_VAL {0x14} CONFIG.C_PROBE_OUT2_INIT_VAL {0x10} \
-    CONFIG.C_PROBE_OUT3_INIT_VAL {0x4} CONFIG.C_PROBE_OUT4_INIT_VAL {0x10} \
+    CONFIG.C_PROBE_OUT9_WIDTH {5}  \
+    CONFIG.C_PROBE_OUT0_INIT_VAL {0x0} CONFIG.C_PROBE_OUT1_INIT_VAL {0x28} CONFIG.C_PROBE_OUT2_INIT_VAL {0x28} \
+    CONFIG.C_PROBE_OUT3_INIT_VAL {0x8} CONFIG.C_PROBE_OUT4_INIT_VAL {0x10} \
 ] [get_ips vio_0]
 generate_target all [get_ips vio_0]
 

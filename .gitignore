@@ -1,0 +1,21 @@
+# Vivado project and generated folders (recreated by create_project.tcl)
+CORDIC.xpr
+CORDIC.cache/
+CORDIC.gen/
+CORDIC.hw/
+CORDIC.ip_user_files/
+CORDIC.runs/
+CORDIC.sim/
+CORDIC.srcs/sources_1/ip/
+.Xil/
+reports/
+*.jou
+*.log
+*.str
+# Python
+__pycache__/
+*.pyc
+# simulation outputs
+*.vcd
+*.vvp
+vga_frame.ppm

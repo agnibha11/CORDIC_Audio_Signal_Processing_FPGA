@@ -3,7 +3,7 @@
 #  other, and prints a PASS/FAIL table.    (Vivado Tcl console, from CORDIC/)
 #     source scripts/run_sims.tcl
 # ============================================================================
-set tbs {tb_cordic_engine tb_mic3_adc_spi tb_da2_dac_spi tb_kypd_scanner tb_recip_divider tb_cordic_fm_system tb_cordic_fm_top}
+set tbs {tb_cordic_engine tb_awgn_gen tb_audio_lpf tb_sd_dac tb_bin2bcd tb_mic_adc_spi tb_da2_dac_spi tb_kypd_scanner tb_recip_divider tb_fm_dsp_core tb_cordic_fm_top tb_cordic_fm_system}
 set results {}
 foreach tb $tbs {
     set_property top $tb [get_filesets sim_1]

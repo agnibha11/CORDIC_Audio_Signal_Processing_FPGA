@@ -24,20 +24,25 @@ def rgb12(v):
 COL = dict(bg=rgb12(0x001), txt=rgb12(0xEEE), ovl=rgb12(0xFD0), m=rgb12(0x0E2), s=rgb12(0x0BF),
            mid=rgb12(0x445), grid=rgb12(0x223), frm=rgb12(0x667))
 
-def main(fc_idx=20, beta_q=16, fm_idx=4, amp=16, mode=0, source=1, snr=66, tbase=0):
+def main(fc_idx=40, beta_q=40, fm_idx=8, amp=16, mode=0, source=1, noise=16, tbase=0, out=OUT, title=None):
     consts = cm.derive_constants(fc_idx, beta_q, fm_idx, mode)
     core = cm.FMCore()
-    # a triggered record: run until a rising zero crossing of m, then 1024 samples
-    samples = []
-    prev = 0; armed = False
-    for i in range(4096):
-        r = core.step(0, dict(mode=mode, source=source, amp=amp), consts)
+    params = dict(mode=mode, source=source, amp=amp, noise=noise)
+    # a triggered record: run until a rising zero crossing of the reference, then 1024 samples
+    samples = []; hist = []
+    armed = False
+    for i in range(40000):
+        r = core.step(0, params, consts)
+        hist.append(r)
+        if i < 600: continue                      # let the filters settle
         if not samples:
-            if r["m"] < -1024: armed = True
-            if armed and r["m"] >= 0: samples.append(r)
-        else:
+            if r["m_ref"] < -1024: armed = True
+            if armed and r["m_ref"] >= 0: samples.append(r)
+        elif len(samples) < 1024:
             samples.append(r)
-            if len(samples) == 1024: break
+    # what the fidelity meter would show (32768-sample window, leading-one log2 estimate is +/- 0.5 dB)
+    sig = sum(h["m_ref"] ** 2 for h in hist[600:33368]); err = sum(h["err"] ** 2 for h in hist[600:33368])
+    snr = min(99, int(round(10 * np.log10(sig / max(err, 1)))))
     img = np.zeros((480, 640, 3), dtype=np.uint8); img[:, :] = COL["bg"]
     A_TOP, A_BOT, A_MID = 32, 191, 112
     B_TOP, B_BOT, B_MID = 208, 367, 288
@@ -56,8 +61,8 @@ def main(fc_idx=20, beta_q=16, fm_idx=4, amp=16, mode=0, source=1, snr=66, tbase
     for x in range(640):
         i, ip = x >> tbase, max(x - 1, 0) >> tbase
         sc, sp = samples[i], samples[ip]
-        draw(x, ypos(B_MID, sp["s"]), ypos(B_MID, sc["s"]), COL["s"], B_TOP, B_BOT)
-        draw(x, ypos(A_MID, sp["m"]), ypos(A_MID, sc["m"]), COL["m"], A_TOP, A_BOT)
+        draw(x, ypos(B_MID, sp["r"]), ypos(B_MID, sc["r"]), COL["s"], B_TOP, B_BOT)
+        draw(x, ypos(A_MID, sp["m_ref"]), ypos(A_MID, sc["m_ref"]), COL["m"], A_TOP, A_BOT)
         draw(x, ypos(A_MID, sp["m_hat"]), ypos(A_MID, sc["m_hat"]), COL["ovl"], A_TOP, A_BOT)
     # text layer
     screen = {r: list(s) for r, s in ROWS.items()}
@@ -65,12 +70,12 @@ def main(fc_idx=20, beta_q=16, fm_idx=4, amp=16, mode=0, source=1, snr=66, tbase
         for k, ch in enumerate(s): screen[r][c + k] = ch
     put(24, 8, "%5d" % (fc_idx * 100)); put(24, 31, ["FM ", "PM ", "AM ", "BYP"][mode])
     put(25, 8, "%2d.%03d" % (beta_q // 8, (beta_q % 8) * 125)); put(25, 31, "TONE" if source else "MIC ")
-    put(26, 8, "%5d" % (fm_idx * 50)); put(26, 31, "X%d" % (1 << tbase))
+    put(26, 8, "%5d" % (fm_idx * 50)); put(26, 31, " OFF" if noise == 0 else "%2dDB" % (31 - noise))
     put(27, 8, "%d.%02d" % (amp // 16, round((amp % 16) * 6.25))); put(27, 31, "RUN ")
     dev10 = (beta_q * fm_idx * 125) >> 1
     put(28, 8, "%5d.%d" % (dev10 // 10, dev10 % 10)); put(28, 31, "FINE")
-    put(29, 8, "%2d" % snr); put(29, 31, "ORIG")
-    put(12, 31, "REC")
+    put(29, 8, "%2d" % snr); put(29, 31, "RECV")
+    put(12, 28, "%d" % (1 << tbase)); put(12, 31, "REC")
     for r, chars in screen.items():
         for c, ch in enumerate(chars):
             if ch == ' ': continue
@@ -81,9 +86,13 @@ def main(fc_idx=20, beta_q=16, fm_idx=4, amp=16, mode=0, source=1, snr=66, tbase
                         y0, x0 = r * 16 + gy * 2, c * 16 + gx * 2
                         img[y0:y0 + 2, x0:x0 + 2] = COL["txt"]
     plt.figure(figsize=(8, 6)); plt.imshow(img, interpolation="nearest"); plt.axis("off")
-    plt.title("Expected VGA screen (Python rendering of the RTL layout): FM, tone source, beta = 2")
-    plt.savefig(OUT, dpi=110, bbox_inches="tight"); plt.close()
-    print("wrote", OUT)
+    plt.title(title or "Expected VGA screen (Python rendering of the RTL layout)", fontsize=9)
+    plt.savefig(out, dpi=110, bbox_inches="tight"); plt.close()
+    print("wrote", out, "snr", snr)
 
 if __name__ == "__main__":
-    main()
+    d = os.path.dirname(OUT)
+    main(noise=16, title="Expected VGA screen: FM, 400 Hz tone, deviation 2 kHz, channel C/N = 15 dB")
+    main(noise=0,  out=os.path.join(d, "vga_expected_clean.png"), title="Expected VGA screen: FM, 400 Hz tone, clean channel")
+    main(noise=25, out=os.path.join(d, "vga_expected_threshold.png"), title="Expected VGA screen: FM below threshold, C/N = 6 dB (clicks)")
+    main(noise=16, mode=2, out=os.path.join(d, "vga_expected_am.png"), title="Expected VGA screen: AM at the same C/N = 15 dB")

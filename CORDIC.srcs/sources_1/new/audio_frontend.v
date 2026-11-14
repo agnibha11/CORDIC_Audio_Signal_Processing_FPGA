@@ -3,7 +3,7 @@
 // ============================================================================
 //  audio_frontend.v -- ADC code -> signed Q15 audio with DC removal
 //
-//  The MIC3 delivers unsigned 12-bit codes biased near mid-scale (2048).
+//  The Pmod MIC delivers unsigned 12-bit codes biased near mid-scale (2048).
 //  1. offset binary -> two's complement, scaled to Q15 (<< 4)
 //  2. first-order DC blocker  y[n] = x[n] - x[n-1] + (1 - 2^-8) y[n-1]
 //     implemented with 8 fractional guard bits (acc is Q15.8):

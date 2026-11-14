@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Bit-accurate Python reference model of the CORDIC FM audio processor.
+Bit-accurate Python reference model of the CORDIC radio link
+(transmitter -> noisy channel -> receiver).
 
 Every arithmetic step here mirrors the Verilog RTL exactly (two's-complement
 widths, arithmetic right shifts = floor, modular phase accumulators), so the
@@ -127,14 +128,18 @@ def cordic_sincos_q15(phase32):
 # Parameter -> DSP constant derivation (param_controller.v)
 # ----------------------------------------------------------------------------
 MODE_FM, MODE_PM, MODE_AM, MODE_BYP = 0, 1, 2, 3
+PM_BETA_MAX = 16             # PM phase deviation is min(beta, 2.0) rad  (beta_q <= 16) -> 1.14 rad of margin to the +/-pi wrap
+AM_BETA_MAX = 8              # AM depth is min(beta, 1.0)                (beta_q <= 8)  -> never over-modulates
 
 def derive_constants(fc_idx, beta_q, fm_idx, mode):
     fcw_c = wrap(fc_idx * FCW_PER_100HZ, 32)
     fcw_m = wrap(fm_idx * FCW_PER_50HZ, 32)
     kdev  = (beta_q * fcw_m) >> BETA_FRAC_BITS          # 32-bit unsigned (< 2^32 for all legal settings)
-    kpm   = beta_q * KPM_UNIT                            # up to 34 bits
-    mu_q  = beta_q << MU_SHIFT                           # Q15 depth, up to 19 bits
-    d_am  = (beta_q * AM_D_UNIT) >> 6
+    b_pm  = min(beta_q, PM_BETA_MAX)
+    b_am  = min(beta_q, AM_BETA_MAX)
+    kpm   = b_pm * KPM_UNIT                              # < 2^31
+    mu_q  = b_am << MU_SHIFT                             # Q15 depth, <= 32768
+    d_am  = (b_am * AM_D_UNIT) >> 6
     if mode == MODE_FM:
         d = kdev >> (32 - Z)
     elif mode == MODE_PM:
@@ -143,8 +148,72 @@ def derive_constants(fc_idx, beta_q, fm_idx, mode):
         d = d_am
     else:
         d = 0
-    g = 0 if d == 0 else (1 << DIV_NUM_SHIFT) // d
+    g = 0 if d == 0 else min((1 << DIV_NUM_SHIFT) // d, (1 << 32) - 1)
     return dict(fcw_c=fcw_c, fcw_m=fcw_m, kdev=kdev, kpm=kpm, mu_q=mu_q, d_am=d_am, div=d, g=g)
+
+# ----------------------------------------------------------------------------
+# Channel noise generator (awgn_gen.v)
+#   xorshift32 PRNG -> 12 signed 16-bit words summed (Irwin-Hall, sigma = 2^16)
+#   -> scaled by a per-level gain so that sigma equals the requested value.
+#   noise_idx 0 = channel noise off;  1..31 -> C/N = 31 - noise_idx  dB
+#   C/N is carrier power (A^2/2, A = 32767) over the noise power of one
+#   quadrature component (sigma^2), i.e. measured over the whole 0..Fs/2 band.
+# ----------------------------------------------------------------------------
+XS_SEED    = 0x2545F491
+NOISE_SUMS = 12
+def cnr_db_of(noise_idx):
+    return None if noise_idx == 0 else 31 - noise_idx
+NOISE_GAIN = [0] + [int(round(32767.0 / math.sqrt(2.0) / 10 ** ((31 - k) / 20.0))) for k in range(1, 32)]
+
+def xorshift32(x):
+    x ^= (x << 13) & 0xFFFFFFFF
+    x ^= x >> 17
+    x ^= (x << 5) & 0xFFFFFFFF
+    return x
+
+class Awgn:
+    def __init__(self):
+        self.x = XS_SEED
+    def _sum(self):
+        acc = 0
+        for _ in range(NOISE_SUMS):
+            self.x = xorshift32(self.x)
+            acc += to_signed(self.x >> 16, 16)
+        return acc                                   # 20-bit signed, sigma = 2^16
+    def step(self, noise_idx):
+        g = NOISE_GAIN[noise_idx]
+        si = self._sum(); sq = self._sum()
+        return _ashr(si * g, 16), _ashr(sq * g, 16)  # 19-bit signed each
+
+# ----------------------------------------------------------------------------
+# Audio low-pass filter (audio_lpf.v): cascade of moving-sum (boxcar) stages.
+# Multiplier-free, linear phase, exact integer arithmetic.
+# ----------------------------------------------------------------------------
+RAW_BITS  = 20                                       # width of the unfiltered receiver output
+LPF_LENS  = (4, 4, 4, 4)                             # stage lengths (powers of two)
+LPF_SHIFT = sum(int(math.log2(L)) for L in LPF_LENS) # total gain = 2^LPF_SHIFT
+LPF_DELAY = sum(L - 1 for L in LPF_LENS) / 2.0       # group delay in samples
+
+class BoxLPF:
+    def __init__(self, lens=LPF_LENS):
+        self.lens = lens
+        self.dl  = [[0] * L for L in lens]
+        self.acc = [0] * len(lens)
+    def step(self, x):
+        v = x
+        for k in range(len(self.lens)):
+            self.acc[k] += v - self.dl[k][-1]
+            self.dl[k] = [v] + self.dl[k][:-1]
+            v = self.acc[k]
+        return round_shift(v, LPF_SHIFT)             # fits 16 bits: |mean| <= 32768 -> saturate for the +32768 corner
+
+def lpf_response(f, fs=FS, lens=LPF_LENS):
+    """|H(f)| of the boxcar cascade (float)."""
+    h = 1.0
+    for L in lens:
+        x = math.pi * f / fs
+        h *= 1.0 if abs(math.sin(x)) < 1e-12 else abs(math.sin(L * x) / (L * math.sin(x)))
+    return h
 
 # ----------------------------------------------------------------------------
 # Audio front end (audio_frontend.v): ADC code -> Q15, DC blocker
@@ -165,17 +234,22 @@ class AudioFrontEnd:
         return y, clip
 
 # ----------------------------------------------------------------------------
-# Per-sample DSP sequence (fm_dsp_core.v)
+# Per-sample DSP sequence (fm_dsp_core.v): transmitter -> channel -> receiver
 # ----------------------------------------------------------------------------
 class FMCore:
     def __init__(self):
         self.phi_m = 0
         self.phi_c = 0
         self.theta_hat_prev = 0
+        self.awgn = Awgn()
+        self.lpf_ref = BoxLPF()
+        self.lpf_rx  = BoxLPF()
 
     def step(self, x_mic, params, consts):
-        """params: dict(mode, source, amp) ; consts from derive_constants()."""
+        """params: dict(mode, source, amp, noise) ; consts from derive_constants()."""
         mode, source, amp = params['mode'], params['source'], params['amp']
+        noise_idx = params.get('noise', 0)
+        ni, nq = self.awgn.step(noise_idx)
         # --- job 1: internal tone ------------------------------------------------
         _, ty, _ = cordic(X0, 0, self.phi_m >> (32 - Z), False)
         tone = round_shift(ty, G)
@@ -196,35 +270,44 @@ class FMCore:
         else:
             theta = self.phi_c
         env = sat(16384 + _ashr(p_am, 16), 16)
-        # --- job 2: carrier -----------------------------------------------------
+        # --- job 2: carrier (transmitter) ---------------------------------------
         cx, cy, _ = cordic(X0, 0, theta >> (32 - Z), False)
         I, Q = round_shift(cx, G), round_shift(cy, G)
         I_am = _ashr(I * env, 15)
         Q_am = _ashr(Q * env, 15)
-        if mode in (MODE_FM, MODE_PM):
-            s, vx, vy = I, I, Q
-        elif mode == MODE_AM:
-            s, vx, vy = I_am, I_am, Q_am
+        if mode == MODE_AM:
+            tx_i, tx_q = I_am, Q_am
         else:
-            s, vx, vy = m, I, Q
-        # --- job 3: demodulator (vectoring) --------------------------------------
-        mx, my, th = cordic(vx << G, vy << G, 0, True)
-        mag16 = round_shift(mx, G)
+            tx_i, tx_q = I, Q
+        s = m if mode == MODE_BYP else tx_i
+        # --- channel: additive white Gaussian noise on both quadratures ----------
+        rx_i = (m if mode == MODE_BYP else tx_i) + ni
+        rx_q = tx_q + nq
+        r = sat(_ashr(rx_i, 1), 16)                      # DAC-A / scope tap: half scale, 6 dB of headroom for the noise
+        # --- job 3: receiver (vectoring) ------------------------------------------
+        mx, my, th = cordic(rx_i << G, rx_q << G, 0, True)
+        mag = round_shift(mx, G)
         if mode == MODE_FM:
-            r = to_signed((th - self.theta_hat_prev) - (consts['fcw_c'] >> (32 - Z)), Z)
+            raw = to_signed((th - self.theta_hat_prev) - (consts['fcw_c'] >> (32 - Z)), Z)
         elif mode == MODE_PM:
-            r = to_signed(th - (self.phi_c >> (32 - Z)), Z)
+            raw = to_signed(th - (self.phi_c >> (32 - Z)), Z)
         elif mode == MODE_AM:
-            r = mag16 - AM_OFFSET
+            raw = mag - AM_OFFSET
         else:
-            r = 0
+            raw = 0
         self.theta_hat_prev = th
+        # 20-bit result (16x full scale of headroom): wide-band noise must not be
+        # clipped BEFORE the audio filter, or the clipping products fold into the audio band
         if mode == MODE_BYP:
-            m_hat = m
+            m_hat_raw = rx_i
         else:
-            m_hat = sat(_ashr(r * consts['g'], DEMOD_SHIFT), 16)
-        return dict(tone=tone, m=m, s=s, I=I, Q=Q, env=env, theta=theta,
-                    theta_hat=th, mag16=mag16, r=r, m_hat=m_hat, err=m - m_hat)
+            m_hat_raw = sat(_ashr(raw * consts['g'], DEMOD_SHIFT), RAW_BITS)
+        # --- audio filters: identical filter on the reference and on the receiver -
+        m_ref = sat(self.lpf_ref.step(m), 16)
+        m_hat = sat(self.lpf_rx.step(m_hat_raw), 16)
+        return dict(tone=tone, m=m, s=s, I=I, Q=Q, env=env, theta=theta, ni=ni, nq=nq, r=r,
+                    theta_hat=th, mag=mag, raw=raw, m_hat_raw=m_hat_raw,
+                    m_ref=m_ref, m_hat=m_hat, err=m_ref - m_hat)
 
 # ----------------------------------------------------------------------------
 # self-check when run directly

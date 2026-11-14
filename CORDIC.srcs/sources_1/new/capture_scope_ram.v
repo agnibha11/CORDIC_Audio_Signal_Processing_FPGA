@@ -2,9 +2,10 @@
 `default_nettype none
 // ============================================================================
 //  capture_scope_ram.v -- triggered, double-buffered capture of the original,
-//                         modulated and demodulated signals in block RAM
+//                         channel (modulated + noise) and recovered signals
+//                         in block RAM
 //
-//  Storage: 2 banks x 1024 samples x 48 bits ({m, s, m_hat}, Q15 each) in
+//  Storage: 2 banks x 1024 samples x 48 bits ({m, r, m_hat}, Q15 each) in
 //  true-dual-port BRAM (3 x RAMB36).  The capture FSM writes one bank while
 //  the VGA scope reads the other; the banks swap at the next vertical
 //  blanking after a record completes, so the display never tears.
@@ -27,7 +28,7 @@ module capture_scope_ram #(
     // samples
     input  wire               in_valid,
     input  wire signed [15:0] m,
-    input  wire signed [15:0] s,
+    input  wire signed [15:0] r,
     input  wire signed [15:0] m_hat,
     input  wire               hold,
     input  wire               vblank_start,   // pulse: safe moment to swap banks
@@ -115,8 +116,9 @@ module capture_scope_ram #(
 
     always @(posedge clk) begin
         if (we_a)
-            ram[addr_a] <= {m, s, m_hat};
-        vio_data <= ram[addr_a];
+            ram[addr_a] <= {m, r, m_hat};
+        else
+            vio_data <= ram[addr_a];          // read-back only in the clocks without a write
     end
     always @(posedge clk) begin
         rd_data <= ram[addr_b];

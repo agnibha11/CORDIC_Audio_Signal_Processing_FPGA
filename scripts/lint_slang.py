@@ -14,8 +14,9 @@ rtl  = sorted(glob.glob(os.path.join(base, "CORDIC.srcs", "sources_1", "new", "*
 sim  = sorted(glob.glob(os.path.join(base, "CORDIC.srcs", "sim_1", "new", "*.v")))
 args = [a for a in sys.argv[1:] if not a.startswith("-")]
 verbose = "-v" in sys.argv
-tops = args or ["cordic_fm_top", "tb_cordic_engine", "tb_mic3_adc_spi", "tb_da2_dac_spi",
-                "tb_kypd_scanner", "tb_recip_divider", "tb_cordic_fm_system", "tb_cordic_fm_top"]
+tops = args or ["cordic_fm_top", "tb_cordic_engine", "tb_awgn_gen", "tb_audio_lpf", "tb_sd_dac",
+                "tb_bin2bcd", "tb_mic_adc_spi", "tb_da2_dac_spi", "tb_kypd_scanner",
+                "tb_recip_divider", "tb_fm_dsp_core", "tb_cordic_fm_system", "tb_cordic_fm_top"]
 IGNORE = {"WidthTruncate", "WidthExpand", "EmptyOutputPortConn", "CaseDefault"}
 rc = 0
 for top in tops:

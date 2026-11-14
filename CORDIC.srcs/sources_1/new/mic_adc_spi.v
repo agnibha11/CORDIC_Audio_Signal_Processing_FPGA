@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  mic3_adc_spi.v -- SPI master for the Pmod MIC3 (TI ADCS7476, 12-bit SAR)
+//  mic_adc_spi.v -- SPI master for the Pmod MIC (TI ADCS7476, 12-bit SAR)
 //
-//  Protocol (ADCS7476 datasheet, section 7.3 and Pmod MIC3 reference manual):
+//  Protocol (ADCS7476 datasheet, section 7.3 and Pmod MIC reference manual):
 //    * SCLK idles HIGH.  A conversion starts on the falling edge of CS; the
 //      analog input is sampled at that instant (track -> hold).
 //    * The ADC shifts SDATA out on FALLING edges of SCLK: four leading zeros
@@ -14,13 +14,13 @@
 //    * After 16 SCLK periods CS returns high; t_QUIET (50 ns) must elapse
 //      before the next conversion -- trivially satisfied at 50 kS/s.
 //
-//  Timing at SCLK_DIV = 20 (5 MHz SCLK from 100 MHz): 34 half-periods =
-//  3.4 us per conversion.  f_SCLK max is 20 MHz; the ADC's data access time
+//  Timing at SCLK_DIV = 20 (5 MHz SCLK from 100 MHz): 33 half-periods =
+//  3.3 us per conversion.  f_SCLK max is 20 MHz; the ADC's data access time
 //  (t_DACC <= 40 ns at 3 V) comfortably fits one 200 ns period.
 //
 //  `data` is the raw unsigned 12-bit code (0..4095, mid-scale ~ 2048).
 // ============================================================================
-module mic3_adc_spi #(
+module mic_adc_spi #(
     parameter integer SCLK_DIV = 20          // clk cycles per SCLK period (even)
 )(
     input  wire        clk,
@@ -30,9 +30,9 @@ module mic3_adc_spi #(
     output reg         valid,                // one-cycle pulse: `data` updated
     output reg  [11:0] data,
     // Pmod pins
-    output reg         adc_cs_n,             // MIC3 pin 1  (SS)
-    output reg         adc_sclk,             // MIC3 pin 4  (SCK)
-    input  wire        adc_miso              // MIC3 pin 3  (MISO), already synchronised
+    output reg         adc_cs_n,             // MIC pin 1  (SS)
+    output reg         adc_sclk,             // MIC pin 4  (SCK)
+    input  wire        adc_miso              // MIC pin 3  (MISO), already synchronised
 );
     localparam integer HALF = SCLK_DIV / 2;
 

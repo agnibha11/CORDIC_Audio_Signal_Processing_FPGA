@@ -9,10 +9,11 @@
 //  and the peak |error|.  SNR(dB) = 10 log10(sum_sig / sum_err) is shown on
 //  the VGA using a leading-one log2 estimator (+/- 0.5 dB); the exact sums
 //  are exported to the VIO for an offline calculation.
-//  The demodulator sees the SAME CORDIC-generated I/Q that drives the DAC,
-//  so this is a loop-back measurement of the modulator + demodulator pair:
-//  it isolates the CORDIC's own contribution (angle quantisation, finite
-//  iterations, truncation) from the analog path.
+//  m is the modulating signal and m_hat the receiver output, both after the
+//  same audio filter, so the difference is exactly what the link (modulator,
+//  noisy channel, demodulator) did to the audio.  With the channel noise off
+//  the result is the CORDIC's own noise floor; with it on, the meter traces
+//  the textbook SNR-versus-C/N curves of FM, PM and AM.
 // ============================================================================
 module fidelity_meter #(
     parameter integer WLOG = 15            // 32768 samples = 0.66 s at 50 kS/s
@@ -41,25 +42,30 @@ module fidelity_meter #(
     reg  [15:0] acc_peak;
     reg  [WLOG-1:0] cnt;
 
-    // floor(log2(x)) * 8 + next three mantissa bits  (log2 in Q3 by linear interpolation)
-    function [8:0] log2q3;
-        input [47:0] x;
-        integer k;
-        reg [5:0] p;
-        reg [47:0] sh;
+    // ---- SNR estimate:  10 log10(sum_sig / sum_err)  without a divider ----
+    // log2 of each sum is taken as (position of the leading one) * 8 + the next
+    // three mantissa bits, i.e. log2 in units of 1/8 by linear interpolation.
+    // The sums only change once per window, so the estimate is computed in
+    // four registered steps (in the five clocks after a window ends) to keep
+    // every path short.
+    function [5:0] lead1;                       // position of the leading one
+        input [47:0] xx;
+        integer kk;
         begin
-            p = 6'd0;
-            for (k = 0; k < 48; k = k + 1)
-                if (x[k]) p = k[5:0];
-            sh = x << (6'd47 - p);          // leading one now at bit 47
-            log2q3 = {p, sh[46:44]};
+            lead1 = 6'd0;
+            for (kk = 0; kk < 48; kk = kk + 1)
+                if (xx[kk]) lead1 = kk[5:0];
         end
     endfunction
 
-    wire [8:0]  l_sig = log2q3(sum_sig);
-    wire [8:0]  l_err = log2q3(sum_err);
-    wire [9:0]  l_dif = {1'b0, l_sig} - {1'b0, l_err};
-    wire [15:0] snr_x = l_dif[8:0] * 10'd24;          // * (3.0103 / 8) ~ * 24 / 64
+    reg  [5:0]  p_sig, p_err;                   // step 1
+    reg  [47:0] sh_sig, sh_err;                 // step 2: leading one moved to bit 47
+    reg  [5:0]  p_sig2, p_err2;
+    reg  [9:0]  l_dif;                          // step 3
+    reg  [2:0]  est;                            // estimate sequencer
+    wire [8:0]  l_sig = {p_sig2, sh_sig[46:44]};
+    wire [8:0]  l_err = {p_err2, sh_err[46:44]};
+    wire [15:0] snr_x = l_dif[8:0] * 10'd24;    // * (3.0103 / 8) ~ * 24 / 64
 
     always @(posedge clk) begin
         v1          <= 1'b0;
@@ -69,6 +75,7 @@ module fidelity_meter #(
             acc_sig  <= 48'd0;  acc_err <= 48'd0;  acc_peak <= 16'd0;
             cnt      <= {WLOG{1'b0}};
             sum_sig  <= 48'd0;  sum_err <= 48'd0;  peak_err <= 16'd0;  snr_db <= 7'd0;
+            p_sig <= 6'd0; p_err <= 6'd0; p_sig2 <= 6'd0; p_err2 <= 6'd0; sh_sig <= 48'd0; sh_err <= 48'd0; l_dif <= 10'd0; est <= 3'd0;
         end else begin
             if (in_valid) begin
                 m_sq    <= m * m;
@@ -92,12 +99,20 @@ module fidelity_meter #(
                 end
                 cnt <= cnt + 1'b1;
             end
-            // SNR estimate from the latched sums (quasi-static)
-            if (sum_sig == 48'd0)       snr_db <= 7'd0;
-            else if (sum_err == 48'd0)  snr_db <= 7'd99;
-            else if (l_dif[9])          snr_db <= 7'd0;                 // error > signal
-            else if (snr_x[15:6] > 10'd99) snr_db <= 7'd99;
-            else                        snr_db <= snr_x[12:6];
+            // SNR estimate: runs for five clocks after each window (four pipeline steps)
+            if (v1 && cnt == {WLOG{1'b1}}) est <= 3'd6;
+            else if (est != 3'd0)          est <= est - 3'd1;
+            if (est != 3'd0 && est != 3'd6) begin
+                p_sig  <= lead1(sum_sig);                 p_err  <= lead1(sum_err);
+                sh_sig <= sum_sig << (6'd47 - p_sig);     sh_err <= sum_err << (6'd47 - p_err);
+                p_sig2 <= p_sig;                          p_err2 <= p_err;
+                l_dif  <= {1'b0, l_sig} - {1'b0, l_err};
+                if (sum_sig == 48'd0)       snr_db <= 7'd0;
+                else if (sum_err == 48'd0)  snr_db <= 7'd99;
+                else if (l_dif[9])          snr_db <= 7'd0;                 // error > signal
+                else if (snr_x[15:6] > 10'd99) snr_db <= 7'd99;
+                else                        snr_db <= snr_x[12:6];
+            end
         end
     end
 endmodule

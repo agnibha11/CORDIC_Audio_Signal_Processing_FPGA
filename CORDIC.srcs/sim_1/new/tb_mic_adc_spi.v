@@ -1,12 +1,12 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_mic3_adc_spi.v -- ADC master against the behavioural ADCS7476 model
+//  tb_mic_adc_spi.v -- ADC master against the behavioural ADCS7476 model
 //  Checks: every 12-bit code is received exactly, the model sees exactly 16
 //  SCLK periods per frame, no protocol violations, SCLK idles high, CS low
 //  time = 33 half periods (3.3 us), and a restart while busy is ignored.
 // ============================================================================
-module tb_mic3_adc_spi;
+module tb_mic_adc_spi;
     localparam integer SCLK_DIV = 20;
     reg clk = 0, rst = 1, start = 0;
     always #5 clk = ~clk;
@@ -16,7 +16,7 @@ module tb_mic3_adc_spi;
     reg  [11:0] analog = 12'd0;
     wire [31:0] conv, perr;
 
-    mic3_adc_spi #(.SCLK_DIV(SCLK_DIV)) dut (
+    mic_adc_spi #(.SCLK_DIV(SCLK_DIV)) dut (
         .clk(clk), .rst(rst), .start(start), .busy(busy), .valid(valid), .data(data),
         .adc_cs_n(cs_n), .adc_sclk(sclk), .adc_miso(sdata)
     );
