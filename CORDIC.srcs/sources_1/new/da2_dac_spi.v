@@ -32,18 +32,17 @@ module da2_dac_spi #(
     output reg         dac_sync_n,           // DA2 pin 1 (~SYNC)
     output reg         dac_dina,             // DA2 pin 2 (DINA)
     output reg         dac_dinb,             // DA2 pin 3 (DINB)
-    output wire        dac_sclk               // DA2 pin 4 (SCLK)
+    output reg         dac_sclk               // DA2 pin 4 (SCLK)
 );
 
-    // SCLK is held in two registers.  sclk_pad drives only the pin, so it can be
-    // packed into the I/O cell (IOB TRUE in the XDC) and leaves the chip at the same
-    // instant as the other SPI outputs.  sclk_nq holds the complement and is the copy
-    // the state machine reads back.  Storing the complement makes the two registers
-    // logically different, so synthesis cannot merge them into one (it did merge two
-    // identical copies despite KEEP); DONT_TOUCH is a second guard.
-    (* dont_touch = "true" *) reg sclk_pad;
-    (* dont_touch = "true" *) reg sclk_nq;     // = ~sclk_pad
-    assign dac_sclk = sclk_pad;
+    // SCLK is held in two registers.  The port register dac_sclk drives only the pin, so
+    // it is packed into the I/O cell (IOB TRUE in the XDC) and leaves the chip at the
+    // same instant as the other SPI outputs.  sclk_nq holds the complement and is the
+    // copy the state machine reads back.  Because the two hold different values,
+    // synthesis cannot merge them.  No attribute is placed on the port register:
+    // with KEEP or DONT_TOUCH on it, Vivado reported that it no longer connected
+    // directly to the I/O cell and did not pack it.
+    (* dont_touch = "true" *) reg sclk_nq;     // = ~dac_sclk
 
     localparam integer HALF = SCLK_DIV / 2;
 
@@ -61,7 +60,7 @@ module da2_dac_spi #(
         if (rst) begin
             st         <= S_IDLE;
             dac_sync_n <= 1'b1;
-            sclk_pad <= 1'b0; sclk_nq <= 1'b1;
+            dac_sclk <= 1'b0; sclk_nq <= 1'b1;
             dac_dina   <= 1'b0;
             dac_dinb   <= 1'b0;
             busy       <= 1'b0;
@@ -89,7 +88,7 @@ module da2_dac_spi #(
                         div <= 8'd0;
                         if (sclk_nq) begin
                             // rising edge: present the next bit (except before the first latch)
-                            sclk_pad <= 1'b1; sclk_nq <= 1'b0;
+                            dac_sclk <= 1'b1; sclk_nq <= 1'b0;
                             if (nfall != 5'd0) begin
                                 sha      <= {sha[14:0], 1'b0};
                                 shb      <= {shb[14:0], 1'b0};
@@ -98,7 +97,7 @@ module da2_dac_spi #(
                             end
                         end else begin
                             // falling edge: DAC latches DIN
-                            sclk_pad <= 1'b0; sclk_nq <= 1'b1;
+                            dac_sclk <= 1'b0; sclk_nq <= 1'b1;
                             nfall    <= nfall + 5'd1;
                             if (nfall == 5'd15)
                                 st <= S_TAIL;           // that was the 16th falling edge

@@ -261,7 +261,7 @@ clock.
 
 | Resource | Design | Debug (VIO + hub) | Total | Available | Utilisation |
 |---|---|---|---|---|---|
-| Slice LUTs | 3 508 | 1 552 | 5 060 | 53 200 | 9.51 % |
+| Slice LUTs | 3 506 | 1 553 | 5 059 | 53 200 | 9.51 % |
 | Slice registers | 3 418 | 2 800 | 6 218 | 106 400 | 5.84 % |
 | DSP48E1 | 20 | 0 | 20 | 220 | 9.09 % |
 | Block RAM (RAMB36) | 3 | 0 | 3 | 140 | 2.14 % |
@@ -277,15 +277,15 @@ Breakdown of the design (`u_sys`):
 
 | Block | LUTs | Registers | DSP48E1 | RAMB36 |
 |---|---|---|---|---|
-| `fm_dsp_core` (complete link) | 1 643 | 1 948 | 11 | |
+| `fm_dsp_core` (complete link) | 1 642 | 1 948 | 11 | |
 | &nbsp;&nbsp;of which `cordic_engine` | 372 | 81 | 0 | |
 | &nbsp;&nbsp;of which `awgn_gen` | 135 | 141 | 1 | |
-| &nbsp;&nbsp;of which `audio_lpf` (two instances) | 509 | 1 215 | 0 | |
+| &nbsp;&nbsp;of which `audio_lpf` (two instances) | 508 | 1 215 | 0 | |
 | `fidelity_meter` | 327 | 306 | 2 | |
 | `param_controller`, `recip_divider` | 389 | 242 | 6 | |
 | `vga_timing`, `vga_scope_render` | 598 | 341 | 1 | |
 | `capture_scope_ram` | 119 | 32 | | 3 |
-| Interfaces (keypad, front end, SPI masters, sigma-delta, debouncers) | 375 | 459 | | |
+| Interfaces (keypad, front end, SPI masters, sigma-delta, debouncers) | 374 | 459 | | |
 
 The CORDIC engine, which performs all trigonometric operations of both transmitter and
 receiver, occupies 372 LUTs (0.7 % of the device) and no DSP slices.
@@ -297,8 +297,8 @@ corner:
 
 | | Worst slack | Total negative slack | Failing endpoints | Total endpoints |
 |---|---|---|---|---|
-| Setup | +0.113 ns | 0.000 ns | 0 | 14 762 |
-| Hold | +0.056 ns | 0.000 ns | 0 | 14 746 |
+| Setup | +0.262 ns | 0.000 ns | 0 | 14 766 |
+| Hold | +0.028 ns | 0.000 ns | 0 | 14 750 |
 | Pulse width | +3.750 ns | 0.000 ns | 0 | 6 313 |
 
 All user-specified timing constraints are met. The critical path lies in the receiver's audio
@@ -309,8 +309,8 @@ because the value is converted once per video frame.
 
 ### Power
 
-Vivado estimate with default switching activity (confidence: low): 0.220 W on chip, of which
-0.113 W dynamic and 0.108 W device static; junction temperature 27.5 °C.
+Vivado estimate with default switching activity (confidence: low): 0.219 W on chip, of which
+0.112 W dynamic and 0.108 W device static; junction temperature 27.5 °C.
 
 ### Design checks
 

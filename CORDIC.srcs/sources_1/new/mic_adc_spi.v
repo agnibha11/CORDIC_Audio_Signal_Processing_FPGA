@@ -31,19 +31,18 @@ module mic_adc_spi #(
     output reg  [11:0] data,
     // Pmod pins
     output reg         adc_cs_n,             // MIC pin 1  (SS)
-    output wire        adc_sclk,             // MIC pin 4  (SCK)
+    output reg         adc_sclk,             // MIC pin 4  (SCK)
     input  wire        adc_miso              // MIC pin 3  (MISO), already synchronised
 );
 
-    // SCLK is held in two registers.  sclk_pad drives only the pin, so it can be
-    // packed into the I/O cell (IOB TRUE in the XDC) and leaves the chip at the same
-    // instant as the other SPI outputs.  sclk_nq holds the complement and is the copy
-    // the state machine reads back.  Storing the complement makes the two registers
-    // logically different, so synthesis cannot merge them into one (it did merge two
-    // identical copies despite KEEP); DONT_TOUCH is a second guard.
-    (* dont_touch = "true" *) reg sclk_pad;
-    (* dont_touch = "true" *) reg sclk_nq;     // = ~sclk_pad
-    assign adc_sclk = sclk_pad;
+    // SCLK is held in two registers.  The port register adc_sclk drives only the pin, so
+    // it is packed into the I/O cell (IOB TRUE in the XDC) and leaves the chip at the
+    // same instant as the other SPI outputs.  sclk_nq holds the complement and is the
+    // copy the state machine reads back.  Because the two hold different values,
+    // synthesis cannot merge them.  No attribute is placed on the port register:
+    // with KEEP or DONT_TOUCH on it, Vivado reported that it no longer connected
+    // directly to the I/O cell and did not pack it.
+    (* dont_touch = "true" *) reg sclk_nq;     // = ~adc_sclk
 
     localparam integer HALF = SCLK_DIV / 2;
 
@@ -61,7 +60,7 @@ module mic_adc_spi #(
         if (rst) begin
             st       <= S_IDLE;
             adc_cs_n <= 1'b1;
-            sclk_pad <= 1'b1; sclk_nq <= 1'b0;
+            adc_sclk <= 1'b1; sclk_nq <= 1'b0;
             busy     <= 1'b0;
             div      <= 8'd0;
             nbits    <= 5'd0;
@@ -71,7 +70,7 @@ module mic_adc_spi #(
             case (st)
                 S_IDLE: begin
                     adc_cs_n <= 1'b1;
-                    sclk_pad <= 1'b1; sclk_nq <= 1'b0;
+                    adc_sclk <= 1'b1; sclk_nq <= 1'b0;
                     if (start) begin
                         adc_cs_n <= 1'b0;             // sample instant
                         busy     <= 1'b1;
@@ -85,11 +84,11 @@ module mic_adc_spi #(
                         div <= 8'd0;
                         if (!sclk_nq) begin
                             // falling edge: capture the bit launched one period ago
-                            sclk_pad <= 1'b0; sclk_nq <= 1'b1;
+                            adc_sclk <= 1'b0; sclk_nq <= 1'b1;
                             sh       <= {sh[14:0], adc_miso};
                             nbits    <= nbits + 5'd1;
                         end else begin
-                            sclk_pad <= 1'b1; sclk_nq <= 1'b0;         // rising edge
+                            adc_sclk <= 1'b1; sclk_nq <= 1'b0;         // rising edge
                             if (nbits == 5'd16)
                                 st <= S_TAIL;
                         end

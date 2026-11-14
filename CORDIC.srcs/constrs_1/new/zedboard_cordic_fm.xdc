@@ -96,7 +96,7 @@ set_false_path -from [get_ports {btn_rst btn_u btn_l btn_r btn_c sw[*] kypd_row[
 set_false_path -to   [get_ports {led[*] kypd_col[*] adc_cs_n adc_sclk dac_sync_n dac_dina dac_dinb dac_sclk amp_ain amp_gain amp_shutdown_n vga_r[*] vga_g[*] vga_b[*] vga_hs vga_vs}]
 
 # place the SPI, bit-stream and VGA output registers in the IOBs for clean, skew-free edges.
-# The SPI clocks have dedicated pad registers (sclk_pad) so that they can be packed too.
+# The SPI clocks are packable because the state machines read a separate copy (sclk_nq).
 set_property IOB TRUE [get_ports {adc_cs_n adc_sclk dac_sync_n dac_dina dac_dinb dac_sclk amp_ain vga_r[*] vga_g[*] vga_b[*] vga_hs vga_vs}]
 
 # PL-only design on a Zynq part: the PS7 is intentionally absent
