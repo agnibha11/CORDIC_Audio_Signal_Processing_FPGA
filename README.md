@@ -261,8 +261,8 @@ clock.
 
 | Resource | Design | Debug (VIO + hub) | Total | Available | Utilisation |
 |---|---|---|---|---|---|
-| Slice LUTs | 3 506 | 1 553 | 5 059 | 53 200 | 9.51 % |
-| Slice registers | 3 418 | 2 800 | 6 218 | 106 400 | 5.84 % |
+| Slice LUTs | 3 508 | 1 553 | 5 061 | 53 200 | 9.51 % |
+| Slice registers | 3 417 | 2 800 | 6 217 | 106 400 | 5.84 % |
 | DSP48E1 | 20 | 0 | 20 | 220 | 9.09 % |
 | Block RAM (RAMB36) | 3 | 0 | 3 | 140 | 2.14 % |
 | Bonded I/O | | | 54 | 200 | 27.0 % |
@@ -277,18 +277,18 @@ Breakdown of the design (`u_sys`):
 
 | Block | LUTs | Registers | DSP48E1 | RAMB36 |
 |---|---|---|---|---|
-| `fm_dsp_core` (complete link) | 1 642 | 1 948 | 11 | |
-| &nbsp;&nbsp;of which `cordic_engine` | 372 | 81 | 0 | |
+| `fm_dsp_core` (complete link) | 1 645 | 1 949 | 11 | |
+| &nbsp;&nbsp;of which `cordic_engine` | 375 | 81 | 0 | |
 | &nbsp;&nbsp;of which `awgn_gen` | 135 | 141 | 1 | |
-| &nbsp;&nbsp;of which `audio_lpf` (two instances) | 508 | 1 215 | 0 | |
+| &nbsp;&nbsp;of which `audio_lpf` (two instances) | 509 | 1 216 | 0 | |
 | `fidelity_meter` | 327 | 306 | 2 | |
-| `param_controller`, `recip_divider` | 389 | 242 | 6 | |
-| `vga_timing`, `vga_scope_render` | 598 | 341 | 1 | |
+| `param_controller`, `recip_divider` | 388 | 242 | 6 | |
+| `vga_timing`, `vga_scope_render` | 597 | 341 | 1 | |
 | `capture_scope_ram` | 119 | 32 | | 3 |
-| Interfaces (keypad, front end, SPI masters, sigma-delta, debouncers) | 374 | 459 | | |
+| Interfaces (keypad, front end, SPI masters, sigma-delta, debouncers) | 375 | 457 | | |
 
 The CORDIC engine, which performs all trigonometric operations of both transmitter and
-receiver, occupies 372 LUTs (0.7 % of the device) and no DSP slices.
+receiver, occupies 375 LUTs (0.7 % of the device) and no DSP slices.
 
 ### Timing
 
@@ -297,9 +297,9 @@ corner:
 
 | | Worst slack | Total negative slack | Failing endpoints | Total endpoints |
 |---|---|---|---|---|
-| Setup | +0.262 ns | 0.000 ns | 0 | 14 766 |
-| Hold | +0.028 ns | 0.000 ns | 0 | 14 750 |
-| Pulse width | +3.750 ns | 0.000 ns | 0 | 6 313 |
+| Setup | +0.171 ns | 0.000 ns | 0 | 14 767 |
+| Hold | +0.014 ns | 0.000 ns | 0 | 14 751 |
+| Pulse width | +3.750 ns | 0.000 ns | 0 | 6 314 |
 
 All user-specified timing constraints are met. The critical path lies in the receiver's audio
 filter (`audio_lpf`, accumulator to saturated output). The first implementation had shown a
@@ -309,14 +309,16 @@ because the value is converted once per video frame.
 
 ### Power
 
-Vivado estimate with default switching activity (confidence: low): 0.219 W on chip, of which
-0.112 W dynamic and 0.108 W device static; junction temperature 27.5 °C.
+Vivado estimate with default switching activity (confidence: low): 0.221 W on chip, of which
+0.113 W dynamic and 0.108 W device static; junction temperature 27.6 °C.
 
 ### Design checks
 
-Synthesis reports no critical warnings and no inferred latches, and the design rule check
-reports no errors. The remaining DRC and methodology warnings concern optional DSP pipelining,
-the unused processing system (`ZPS7-1`) and reset structures within the Xilinx debug hub.
+Synthesis and implementation complete without critical warnings; no latches are inferred, and
+the design rule check reports no errors. All 21 serial and VGA outputs are driven from
+flip-flops placed in the I/O cells, giving matched output delays. The remaining DRC and
+methodology warnings are advisory: optional DSP and block RAM pipelining registers, and
+structures inside the Xilinx debug hub.
 
 ## Scope: what was done and what was not
 

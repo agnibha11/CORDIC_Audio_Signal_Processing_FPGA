@@ -1262,8 +1262,8 @@ From `scripts/build_bitstream.tcl` (Vivado 2025.2, default strategies, reports i
 
 | Resource | Design | VIO + debug hub | Total | of device |
 |---|---|---|---|---|
-| Slice LUTs | 3 506 | 1 553 | 5 059 | 9.5 % |
-| Slice registers | 3 418 | 2 800 | 6 218 | 5.8 % |
+| Slice LUTs | 3 508 | 1 553 | 5 061 | 9.5 % |
+| Slice registers | 3 417 | 2 800 | 6 217 | 5.8 % |
 | DSP48E1 | 20 | 0 | 20 | 9.1 % |
 | RAMB36 | 3 | 0 | 3 | 2.1 % |
 | Latches | 0 | 0 | 0 | |
@@ -1271,23 +1271,23 @@ From `scripts/build_bitstream.tcl` (Vivado 2025.2, default strategies, reports i
 
 | Block | LUTs | Registers | DSP48E1 |
 |---|---|---|---|
-| `fm_dsp_core` | 1 642 | 1 948 | 11 |
-| `cordic_engine` (inside it) | 372 | 81 | 0 |
+| `fm_dsp_core` | 1 645 | 1 949 | 11 |
+| `cordic_engine` (inside it) | 375 | 81 | 0 |
 | `awgn_gen` (inside it) | 135 | 141 | 1 |
-| `audio_lpf` x 2 (inside it) | 508 | 1 215 | 0 |
+| `audio_lpf` x 2 (inside it) | 509 | 1 216 | 0 |
 | `fidelity_meter` | 327 | 306 | 2 |
-| `param_controller`, `recip_divider` | 389 | 242 | 6 |
-| `vga_timing`, `vga_scope_render` | 598 | 341 | 1 |
+| `param_controller`, `recip_divider` | 388 | 242 | 6 |
+| `vga_timing`, `vga_scope_render` | 597 | 341 | 1 |
 | `capture_scope_ram` | 119 | 32 | 0 (3 RAMB36) |
 
 The two audio filters hold most of the registers: each keeps 16 delay-line words of 28 bits.
 The VIO alone is larger than the CORDIC, the noise generator and the meter together; it is a
 bring-up tool and can be left out (build without `USE_VIO`).
 
-Power estimate: 0.219 W on chip (0.112 W dynamic, 0.108 W static), junction 27.5 °C. The
+Power estimate: 0.221 W on chip (0.113 W dynamic, 0.108 W static), junction 27.6 °C. The
 estimate uses default switching activity and Vivado rates its confidence as low.
 
-Timing (post-route, slow corner, 10 ns): setup WNS +0.262 ns, hold WHS +0.028 ns, no failing
+Timing (post-route, slow corner, 10 ns): setup WNS +0.171 ns, hold WHS +0.014 ns, no failing
 endpoints; all constraints met. The critical path is in the receiver's `audio_lpf`, from the
 stage counter through the accumulator adder and rounding to the saturated output. If a future
 change pushes it negative, register `nv` before the saturation (one more clock per sample, of
