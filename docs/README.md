@@ -1065,9 +1065,12 @@ read-out is converted once per frame, so the extra clock is free. The next path,
 `audio_lpf`, had +0.248 ns. If a path fails after a change, `reports/timing_summary.rpt` names
 it and the fix is another register.
 
-Two output ports, `adc_sclk` and `dac_sclk`, are not placed in the I/O cells: their registers are
-also read by the SPI state machines, so Vivado cannot move them (Place 30-722). At 5 MHz the
-few nanoseconds of extra skew against the data line are irrelevant.
+All serial and VGA outputs are driven from flip-flops packed into the I/O cells, so they leave
+the chip with matched delays. The SPI clocks need one extra register each for this: a flip-flop
+in an I/O cell can drive only its pin, but each state machine reads its own SCLK back to decide
+which edge comes next. Each master therefore keeps two identical registers, `sclk_pad` for the
+pin and `sclk_q` for the logic, marked KEEP so that synthesis does not merge them. (The first
+build had a single register and Vivado reported it could not be packed, Place 30-722.)
 
 ### 8.16 Numerics reference
 

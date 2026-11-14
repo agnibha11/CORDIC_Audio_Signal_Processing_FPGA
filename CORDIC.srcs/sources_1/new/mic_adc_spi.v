@@ -31,9 +31,18 @@ module mic_adc_spi #(
     output reg  [11:0] data,
     // Pmod pins
     output reg         adc_cs_n,             // MIC pin 1  (SS)
-    output reg         adc_sclk,             // MIC pin 4  (SCK)
+    output wire        adc_sclk,             // MIC pin 4  (SCK)
     input  wire        adc_miso              // MIC pin 3  (MISO), already synchronised
 );
+
+    // SCLK is held in two identical registers.  sclk_pad drives only the pin, so it
+    // can be packed into the I/O cell (IOB TRUE in the XDC) and leaves the chip at
+    // the same instant as the other SPI outputs.  sclk_q is the copy the state
+    // machine reads back.  KEEP stops synthesis from merging the two.
+    (* keep = "true" *) reg sclk_pad;
+    (* keep = "true" *) reg sclk_q;
+    assign adc_sclk = sclk_pad;
+
     localparam integer HALF = SCLK_DIV / 2;
 
     localparam [1:0] S_IDLE = 2'd0,
@@ -50,7 +59,7 @@ module mic_adc_spi #(
         if (rst) begin
             st       <= S_IDLE;
             adc_cs_n <= 1'b1;
-            adc_sclk <= 1'b1;
+            sclk_pad <= 1'b1; sclk_q <= 1'b1;
             busy     <= 1'b0;
             div      <= 8'd0;
             nbits    <= 5'd0;
@@ -60,7 +69,7 @@ module mic_adc_spi #(
             case (st)
                 S_IDLE: begin
                     adc_cs_n <= 1'b1;
-                    adc_sclk <= 1'b1;
+                    sclk_pad <= 1'b1; sclk_q <= 1'b1;
                     if (start) begin
                         adc_cs_n <= 1'b0;             // sample instant
                         busy     <= 1'b1;
@@ -72,13 +81,13 @@ module mic_adc_spi #(
                 S_XFER: begin
                     if (div == HALF - 1) begin
                         div <= 8'd0;
-                        if (adc_sclk) begin
+                        if (sclk_q) begin
                             // falling edge: capture the bit launched one period ago
-                            adc_sclk <= 1'b0;
+                            sclk_pad <= 1'b0; sclk_q <= 1'b0;
                             sh       <= {sh[14:0], adc_miso};
                             nbits    <= nbits + 5'd1;
                         end else begin
-                            adc_sclk <= 1'b1;         // rising edge
+                            sclk_pad <= 1'b1; sclk_q <= 1'b1;         // rising edge
                             if (nbits == 5'd16)
                                 st <= S_TAIL;
                         end

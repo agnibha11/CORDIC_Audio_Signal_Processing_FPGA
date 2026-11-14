@@ -32,8 +32,17 @@ module da2_dac_spi #(
     output reg         dac_sync_n,           // DA2 pin 1 (~SYNC)
     output reg         dac_dina,             // DA2 pin 2 (DINA)
     output reg         dac_dinb,             // DA2 pin 3 (DINB)
-    output reg         dac_sclk               // DA2 pin 4 (SCLK)
+    output wire        dac_sclk               // DA2 pin 4 (SCLK)
 );
+
+    // SCLK is held in two identical registers.  sclk_pad drives only the pin, so it
+    // can be packed into the I/O cell (IOB TRUE in the XDC) and leaves the chip at
+    // the same instant as the other SPI outputs.  sclk_q is the copy the state
+    // machine reads back.  KEEP stops synthesis from merging the two.
+    (* keep = "true" *) reg sclk_pad;
+    (* keep = "true" *) reg sclk_q;
+    assign dac_sclk = sclk_pad;
+
     localparam integer HALF = SCLK_DIV / 2;
 
     localparam [1:0] S_IDLE = 2'd0,
@@ -50,7 +59,7 @@ module da2_dac_spi #(
         if (rst) begin
             st         <= S_IDLE;
             dac_sync_n <= 1'b1;
-            dac_sclk   <= 1'b0;
+            sclk_pad <= 1'b0; sclk_q <= 1'b0;
             dac_dina   <= 1'b0;
             dac_dinb   <= 1'b0;
             busy       <= 1'b0;
@@ -76,9 +85,9 @@ module da2_dac_spi #(
                 S_XFER: begin
                     if (div == HALF - 1) begin
                         div <= 8'd0;
-                        if (!dac_sclk) begin
+                        if (!sclk_q) begin
                             // rising edge: present the next bit (except before the first latch)
-                            dac_sclk <= 1'b1;
+                            sclk_pad <= 1'b1; sclk_q <= 1'b1;
                             if (nfall != 5'd0) begin
                                 sha      <= {sha[14:0], 1'b0};
                                 shb      <= {shb[14:0], 1'b0};
@@ -87,7 +96,7 @@ module da2_dac_spi #(
                             end
                         end else begin
                             // falling edge: DAC latches DIN
-                            dac_sclk <= 1'b0;
+                            sclk_pad <= 1'b0; sclk_q <= 1'b0;
                             nfall    <= nfall + 5'd1;
                             if (nfall == 5'd15)
                                 st <= S_TAIL;           // that was the 16th falling edge
