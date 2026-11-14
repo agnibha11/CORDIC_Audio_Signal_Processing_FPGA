@@ -95,8 +95,10 @@ set_property -dict {PACKAGE_PIN Y19  IOSTANDARD LVCMOS33} [get_ports vga_vs]
 set_false_path -from [get_ports {btn_rst btn_u btn_l btn_r btn_c sw[*] kypd_row[*] adc_miso}]
 set_false_path -to   [get_ports {led[*] kypd_col[*] adc_cs_n adc_sclk dac_sync_n dac_dina dac_dinb dac_sclk amp_ain amp_gain amp_shutdown_n vga_r[*] vga_g[*] vga_b[*] vga_hs vga_vs}]
 
-# place the SPI, bit-stream and VGA output registers in the IOBs for clean, skew-free edges
-set_property IOB TRUE [get_ports {adc_cs_n adc_sclk dac_sync_n dac_dina dac_dinb dac_sclk amp_ain vga_r[*] vga_g[*] vga_b[*] vga_hs vga_vs}]
+# place the SPI, bit-stream and VGA output registers in the IOBs for clean, skew-free edges.
+# adc_sclk and dac_sclk are left out: their registers are also read by the SPI state
+# machines, so they cannot move into the IOB (Place 30-722).  At 5 MHz this is irrelevant.
+set_property IOB TRUE [get_ports {adc_cs_n dac_sync_n dac_dina dac_dinb amp_ain vga_r[*] vga_g[*] vga_b[*] vga_hs vga_vs}]
 
 # PL-only design on a Zynq part: the PS7 is intentionally absent
 set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]

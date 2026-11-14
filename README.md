@@ -10,10 +10,12 @@ Course project for Reconfigurable Computing, Problem Statement 1: *CORDIC-Based 
 Processing System with User-Controlled Frequency Modulation* ([statement](Project%20Statement.pdf)).
 
 > **Project status.** The RTL is complete and verified in simulation against a bit-exact
-> reference model (twelve self-checking test benches, all passing). It has **not yet been
-> synthesised, timed or run on the board**; no resource, timing or bench measurements are
-> quoted in this repository. The bring-up procedure is written and ready in
-> [`docs/TESTING.md`](docs/TESTING.md). See [Scope](#scope-what-was-done-and-what-was-not).
+> reference model: twelve self-checking test benches pass in Vivado XSim and in Icarus
+> Verilog. The design has been synthesised and implemented in Vivado 2025.2 and a bitstream
+> generated ([implementation results](#implementation)). Timing closure at 100 MHz is being
+> confirmed after a fix to one display path, and the design **has not yet been run on the
+> board**. The bring-up procedure is in [`docs/TESTING.md`](docs/TESTING.md). See
+> [Scope](#scope-what-was-done-and-what-was-not).
 
 ---
 
@@ -246,9 +248,59 @@ Twelve self-checking test benches cover every module and the complete system.
 | `tb_cordic_fm_top` | Top level: power-on reset, pads | 16 |
 | `tb_cordic_fm_system` | Full system through the device models: user interface, SNR against theory, capture, VGA timing | 859 |
 
-The benches run in Vivado XSim (`scripts/run_sims.tcl`) and were developed and run with Icarus
-Verilog 12. The design also elaborates without errors under `slang`
+All twelve benches pass in Vivado XSim 2025.2 (`scripts/run_sims.tcl`) and in Icarus Verilog
+12, with identical results: the system bench reports the same SNR values to 0.01 dB in both. The design also elaborates without errors under `slang`
 (`scripts/lint_slang.py`).
+
+## Implementation
+
+Vivado 2025.2, `xc7z020clg484-1`, default synthesis and implementation strategies, one 100 MHz
+clock.
+
+| Resource | Design | Debug (VIO + hub) | Total | Available | Utilisation |
+|---|---|---|---|---|---|
+| Slice LUTs | 3 514 | 1 553 | 5 067 | 53 200 | 9.5 % |
+| Slice registers | 3 418 | 2 800 | 6 218 | 106 400 | 5.8 % |
+| DSP48E1 | 20 | 0 | 20 | 220 | 9.1 % |
+| Block RAM (RAMB36) | 3 | 0 | 3 | 140 | 2.1 % |
+| Latches | 0 | 0 | 0 | | |
+
+"Design" comprises all logic except the debug cores, including the top-level power-on reset
+and input synchronisers. The VIO core serves bring-up only and may be omitted from a final
+build.
+
+Breakdown of the design (`u_sys`):
+
+| Block | LUTs | Registers | DSP48E1 | BRAM |
+|---|---|---|---|---|
+| `fm_dsp_core` (whole link) | 1 645 | 1 948 | 11 | |
+| of which `cordic_engine` | 374 | 81 | 0 | |
+| of which `awgn_gen` | 135 | 141 | 1 | |
+| of which the two `audio_lpf` | 509 | 1 215 | 0 | |
+| `fidelity_meter` | 327 | 306 | 2 | |
+| `param_controller` + `recip_divider` | 397 | 244 | 6 | |
+| VGA (`vga_timing`, `vga_scope_render`) | 598 | 341 | 1 | |
+| `capture_scope_ram` | 119 | 32 | | 3 |
+| Interfaces (keypad, front end, SPI masters, sigma-delta, debouncers) | 370 | 457 | | |
+
+The CORDIC engine, which performs all trigonometric operations of both transmitter and
+receiver, occupies 374 LUTs (0.7 % of the device) and no DSP slices.
+
+**Power** (Vivado estimate, default activity, low confidence): 0.220 W on chip, of which
+0.112 W dynamic and 0.108 W device static; junction temperature 27.5 °C.
+
+**Timing.** The initial implementation met hold timing (WHS +0.073 ns) and showed a setup
+violation of 0.276 ns on three endpoints of a single path: the multiplication that computes the
+frequency deviation displayed on the VGA screen. This path lies outside the signal processing
+chain. It has been divided into two register stages; because the value is converted only once
+per video frame, the additional clock cycle has no functional effect, and the full-system
+simulation output is unchanged. The next most critical path, in the audio filter, had a slack of
++0.248 ns. Timing closure with this change is to be confirmed by a further implementation run.
+
+**Design checks.** Synthesis reports no critical warnings and no inferred latches, and the
+design rule check reports no errors. The remaining DRC and methodology warnings concern
+optional DSP pipelining, the unused processing system (`ZPS7-1`) and reset structures within
+the Xilinx debug hub.
 
 ## Scope: what was done and what was not
 
@@ -259,17 +311,17 @@ Verilog 12. The design also elaborates without errors under `slang`
   from it.
 * Simulation of every module and of the full system; agreement of the simulated output SNR
   with communication theory.
+* Synthesis, implementation and bitstream generation in Vivado 2025.2; resource, power and
+  timing reports.
 * Constraints, project and build scripts, wiring documentation, bring-up and demonstration
   procedures.
 
 **Not done**
 
-* **Synthesis, implementation and timing closure in Vivado.** The code is written for timing
-  (registered multiplier partial products, pipelined display path) but no timing report
-  exists yet.
+* **Confirmation of timing closure** after the fix described under
+  [Implementation](#implementation).
 * **Operation on the ZedBoard.** No measurement in this repository was taken on hardware.
-  Resource utilisation, power and bench results will be added after the procedure in
-  `docs/TESTING.md` has been carried out.
+  Bench results will be added after the procedure in `docs/TESTING.md` has been carried out.
 * The pin order of ports JC and JD is taken from the ZedBoard schematic and is to be confirmed
   with a multimeter during bring-up (`docs/WIRING.md`, section 4).
 

@@ -126,11 +126,16 @@ module vga_scope_render (
     // ------------------------------------------------------------------
     wire        conv_start = pix_en && (h == 10'd0) && (v == 10'd500);
     reg  [7:0]  fm5_r;                      // fm = idx * 50 = (idx * 5) * 10
+    reg  [12:0] bf_r;                       // beta_q * fm_idx (<= 127 * 40)
     reg  [19:0] dev10_r;                    // peak deviation in units of 0.1 Hz
     reg  [4:0]  cnr_r;                      // 31 - noise_idx
+    // Two register stages: the read-outs are converted once per frame, so the
+    // extra clock costs nothing, and the product chain no longer has to fit in
+    // one 10 ns cycle (it failed timing by 0.28 ns as a single stage).
     always @(posedge clk) begin
         fm5_r   <= fm_idx * 3'd5;
-        dev10_r <= (beta_q * fm_idx * 8'd125) >> 1;
+        bf_r    <= beta_q * fm_idx;
+        dev10_r <= (bf_r * 7'd125) >> 1;
         cnr_r   <= 5'd31 - noise_idx;
     end
     wire [11:0] fc_bcd, fm_bcd;

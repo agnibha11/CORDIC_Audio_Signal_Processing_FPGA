@@ -13,11 +13,12 @@ Companion documents in this folder:
 | [`DEMO.md`](DEMO.md) | the final demonstration, with what to say and what the audience should see and hear |
 
 **Status, stated plainly.** Every block is verified in simulation (12 self-checking test benches,
-section 9), and the complete signal path is proven bit-for-bit equal to the Python reference
-model. The design has **not yet been synthesised or run on the board by the authors of this
-document**: no Vivado timing report and no hardware measurement exists yet. The RTL was written
-defensively for 100 MHz (section 8.15), and `TESTING.md` is the procedure that closes this gap.
-Wherever a number below comes from the model or from simulation, it says so.
+section 9, passing in both Vivado XSim and Icarus Verilog), and the complete signal path is
+proven bit-for-bit equal to the Python reference model. The design has been synthesised and
+implemented in Vivado 2025.2 and a bitstream generated (section 10.6). The first implementation
+missed timing by 0.276 ns on one display path, which has since been pipelined; closure is to be
+confirmed by a re-run. The design **has not yet been run on the board**; `TESTING.md` is the
+procedure for that. Wherever a number below comes from the model or from simulation, it says so.
 
 ---
 
@@ -1054,12 +1055,19 @@ started once per frame during vertical blanking.
   serial and VGA signals, and "false path" declarations for all board inputs (they are
   resynchronised) and slow outputs.
 
-**Timing has not been run through Vivado yet.** What was done to make 100 MHz likely on the
-first build: no path contains two multipliers; wide products are split; the 48-bit logarithm of
-the meter, the decimal conversion and the pixel path are pipelined or serial; the audio filter
-evaluates one stage per clock. After the first implementation, read
-`reports/timing_summary.rpt`; if a path fails, it will be named there and the fix is another
-register.
+**Timing.** What was done to make 100 MHz likely on the first build: no path contains two
+multipliers; wide products are split; the 48-bit logarithm of the meter, the decimal conversion
+and the pixel path are pipelined or serial; the audio filter evaluates one stage per clock.
+The first implementation still missed by 0.276 ns on one path: `beta_q * fm_idx * 125` in
+`vga_scope_render`, the deviation shown on screen, mapped as a LUT multiplier feeding a DSP
+slice without an input register. It is now two register stages (`bf_r`, then `dev10_r`); the
+read-out is converted once per frame, so the extra clock is free. The next path, inside
+`audio_lpf`, had +0.248 ns. If a path fails after a change, `reports/timing_summary.rpt` names
+it and the fix is another register.
+
+Two output ports, `adc_sclk` and `dac_sclk`, are not placed in the I/O cells: their registers are
+also read by the SPI state machines, so Vivado cannot move them (Place 30-722). At 5 MHz the
+few nanoseconds of extra skew against the data line are irrelevant.
 
 ### 8.16 Numerics reference
 
@@ -1149,7 +1157,8 @@ All run with Icarus Verilog 12 (`iverilog -g2012`); the same files run in Vivado
 
 ### 9.3 What is not verified
 
-* **No synthesis, no timing report, no hardware run** yet (see the status note at the top).
+* **No hardware run** yet, and timing closure after the last fix is still to be confirmed (see the
+  status note at the top).
 * The analog behaviour of the Pmods (microphone level and compression, amplifier loudness, DAC
   settling) is not modelled; the benches cover the digital interfaces.
 * The pin numbering of ports JC and JD was taken from the ZedBoard schematic's net order
@@ -1244,11 +1253,37 @@ Left: histogram of 60 000 noise samples against the ideal Gaussian. Right: the a
 
 ### 10.6 Resources and timing
 
-Known from the design: one clock domain; 3 block RAMs (the capture memory); DSP48-sized multipliers:
-10 in the DSP core (6 partial products, 4 single products), 1 in the noise generator, 2 in the
-meter, plus the small parameter products. Logic and timing figures require a Vivado run:
-`scripts/build_bitstream.tcl` writes them to `reports/`. They are deliberately not quoted here
-because they have not been produced yet.
+From `scripts/build_bitstream.tcl` (Vivado 2025.2, default strategies, reports in `reports/`):
+
+| Resource | Design | VIO + debug hub | Total | of device |
+|---|---|---|---|---|
+| Slice LUTs | 3 514 | 1 553 | 5 067 | 9.5 % |
+| Slice registers | 3 418 | 2 800 | 6 218 | 5.8 % |
+| DSP48E1 | 20 | 0 | 20 | 9.1 % |
+| RAMB36 | 3 | 0 | 3 | 2.1 % |
+| Latches | 0 | 0 | 0 | |
+| Global clock buffers | 1 | 1 (JTAG) | 2 | |
+
+| Block | LUTs | Registers | DSP48E1 |
+|---|---|---|---|
+| `fm_dsp_core` | 1 645 | 1 948 | 11 |
+| `cordic_engine` (inside it) | 374 | 81 | 0 |
+| `awgn_gen` (inside it) | 135 | 141 | 1 |
+| `audio_lpf` x 2 (inside it) | 509 | 1 215 | 0 |
+| `fidelity_meter` | 327 | 306 | 2 |
+| `param_controller`, `recip_divider` | 397 | 244 | 6 |
+| `vga_timing`, `vga_scope_render` | 598 | 341 | 1 |
+| `capture_scope_ram` | 119 | 32 | 0 (3 RAMB36) |
+
+The two audio filters hold most of the registers: each keeps 16 delay-line words of 28 bits.
+The VIO alone is larger than the CORDIC, the noise generator and the meter together; it is a
+bring-up tool and can be left out (build without `USE_VIO`).
+
+Power estimate: 0.220 W on chip (0.112 W dynamic, 0.108 W static), junction 27.5 °C. The
+estimate uses default switching activity and Vivado rates its confidence as low.
+
+Timing: WHS +0.073 ns (hold met). Setup missed by 0.276 ns on the display path described in
+section 8.15, now fixed; the value after the fix is to be filled in from the next run.
 
 ---
 
@@ -1426,7 +1461,7 @@ screen text, edit `gen_text_layout.py`, run it, and update the field positions i
 
 **Limits, honestly.**
 
-* Not yet built or run on hardware (see top).
+* Not yet run on hardware; timing closure after the last fix to be confirmed (see top).
 * The channel is simulated inside the chip; the DAC output is not received back through an ADC.
   The loop therefore measures the algorithm and the simulated channel, not the analog parts.
 * The receiver knows the transmitter's carrier phase (same chip), which is what makes the simple
