@@ -654,7 +654,7 @@ SDATA ---<  0   0   0   0  D11 D10  D9 ...            D1  D0 >---
 The result is an unsigned number 0 to 4095 where about 2048 means "no sound". `mic_adc_spi` runs
 SCLK at 5 MHz, so a conversion takes 3.3 microseconds out of the 20 available.
 
-### 7.2 Pmod DA2 on JD
+### 7.2 Pmod DA2 on JA
 
 *What is on it:* two Texas Instruments **DAC121S101** 12-bit digital-to-analog converters. They
 share the SYNC and SCLK lines and have one data line each (DINA, DINB), so one 16-clock frame
@@ -675,7 +675,7 @@ the reading edge) and also runs at 5 MHz.
 B, pin 5 = ground. In this design **A is the channel signal** and **B is the monitor** (whatever
 the loudspeaker plays). A Q15 sample `s` becomes the DAC code `(s + 32768) >> 4`.
 
-### 7.3 Pmod AMP2 (PB200-233 rev B) on JA
+### 7.3 Pmod AMP2 (PB200-233 rev B) on JD
 
 *What is on it:* an Analog Devices **SSM2377** class-D audio power amplifier (up to 2.5 W into
 4 ohm from 5 V; less from 3.3 V), an RC low-pass filter in front of its input, and a 3.5 mm mono

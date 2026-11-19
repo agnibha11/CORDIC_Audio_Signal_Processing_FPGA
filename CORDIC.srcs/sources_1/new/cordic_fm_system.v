@@ -37,12 +37,12 @@ module cordic_fm_system #(
     output wire        adc_cs_n,
     output wire        adc_sclk,
     input  wire        adc_miso,          // synchronised
-    // Pmod DA2 (JD top row)
+    // Pmod DA2 (JA top row)
     output wire        dac_sync_n,
     output wire        dac_dina,
     output wire        dac_dinb,
     output wire        dac_sclk,
-    // Pmod AMP2 (JA top row)
+    // Pmod AMP2 (JD top row)
     output wire        amp_ain,           // sigma-delta bit stream
     output wire        amp_gain,          // 1 = 6 dB, 0 = 12 dB
     output wire        amp_shutdown_n,    // 0 = amplifier off

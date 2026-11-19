@@ -10,10 +10,10 @@ by `scripts/draw_wiring.py`, which checks every pin against the constraint file
 
 | ZedBoard port | Row | Module | Why this port |
 |---|---|---|---|
-| **JA1** | top (pins 1-6) | Pmod AMP2 | |
+| **JA1** | top (pins 1-6) | Pmod DA2 | |
 | **JB1** | both (pins 1-12) | Pmod KYPD | the only 12-pin module |
 | **JC1** | top (pins 1-6) | Pmod MIC | |
-| **JD1** | top (pins 1-6) | Pmod DA2 | |
+| **JD1** | top (pins 1-6) | Pmod AMP2 | |
 | VGA | | monitor | |
 | J17 "PROG" | | PC (micro-USB) | programming, VIO |
 | J20 | | 12 V supply | |
@@ -32,18 +32,19 @@ processor design and software.
 Direction is seen from the FPGA. "Port pin" is the number printed on the ZedBoard next to the
 connector (pin 1 is marked); the top row is 1-6, the bottom row 7-12.
 
-### JA1 top row: Pmod AMP2
+### JA1 top row: Pmod DA2
 
-| Port pin | FPGA pin | RTL port | Dir | Pmod AMP2 J1 |
+| Port pin | FPGA pin | RTL port | Dir | Pmod DA2 J1 |
 |---|---|---|---|---|
-| JA1 | Y11 | `amp_ain` | out | 1 AIN (6.25 Mbit/s sigma-delta bit stream) |
-| JA2 | AA11 | `amp_gain` | out | 2 GAIN (high = 6 dB, low = 12 dB) |
-| JA3 | Y10 | not used | | 3 NC |
-| JA4 | AA9 | `amp_shutdown_n` | out | 4 ~SHUTDOWN (low = off) |
+| JA1 | Y11 | `dac_sync_n` | out | 1 ~SYNC |
+| JA2 | AA11 | `dac_dina` | out | 2 DINA (channel A data) |
+| JA3 | Y10 | `dac_dinb` | out | 3 DINB (channel B data) |
+| JA4 | AA9 | `dac_sclk` | out | 4 SCLK (5 MHz, idles low) |
 | 5 | | ground | | 5 GND |
 | 6 | | 3.3 V | | 6 VCC |
 
-Loudspeaker: 3.5 mm mono jack J2 on the Pmod AMP2.
+Analog outputs on the Pmod DA2's second header J2: pin 1 = **VOUTA (channel signal)**,
+pin 3 = **VOUTB (monitor)**, pin 5 = ground. 0 to 3.3 V, resting at 1.65 V.
 
 ### JB1 both rows: Pmod KYPD
 
@@ -73,19 +74,18 @@ Loudspeaker: 3.5 mm mono jack J2 on the Pmod AMP2.
 | 5 | | ground | | 5 GND |
 | 6 | | 3.3 V | | 6 VCC |
 
-### JD1 top row: Pmod DA2
+### JD1 top row: Pmod AMP2
 
-| Port pin | FPGA pin | RTL port | Dir | Pmod DA2 J1 |
+| Port pin | FPGA pin | RTL port | Dir | Pmod AMP2 J1 |
 |---|---|---|---|---|
-| JD1 | V7 | `dac_sync_n` | out | 1 ~SYNC |
-| JD2 | W7 | `dac_dina` | out | 2 DINA (channel A data) |
-| JD3 | V5 | `dac_dinb` | out | 3 DINB (channel B data) |
-| JD4 | V4 | `dac_sclk` | out | 4 SCLK (5 MHz, idles low) |
+| JD1 | V7 | `amp_ain` | out | 1 AIN (6.25 Mbit/s sigma-delta bit stream) |
+| JD2 | W7 | `amp_gain` | out | 2 GAIN (high = 6 dB, low = 12 dB) |
+| JD3 | V5 | not used | | 3 NC |
+| JD4 | V4 | `amp_shutdown_n` | out | 4 ~SHUTDOWN (low = off) |
 | 5 | | ground | | 5 GND |
 | 6 | | 3.3 V | | 6 VCC |
 
-Analog outputs on the Pmod DA2's second header J2: pin 1 = **VOUTA (channel signal)**,
-pin 3 = **VOUTB (monitor)**, pin 5 = ground. 0 to 3.3 V, resting at 1.65 V.
+Loudspeaker: 3.5 mm mono jack J2 on the Pmod AMP2.
 
 ### On-board
 

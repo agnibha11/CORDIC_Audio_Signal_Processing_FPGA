@@ -16,13 +16,13 @@ ROOT = os.path.normpath(os.path.join(HERE, ".."))
 
 # (port pin, FPGA pin, RTL port, Pmod pin name, direction: '>' FPGA drives, '<' Pmod drives, '-' unused, 'p' power)
 PORTS = [
- ("JA1  (top row)", "Pmod AMP2  (PB200-233 rev B)", "J1", "SSM2377 class-D amplifier", "#d62728", [
-    ("JA1",  "Y11",  "amp_ain",        "1  AIN",        ">"),
-    ("JA2",  "AA11", "amp_gain",       "2  GAIN",       ">"),
-    ("JA3",  "Y10",  "",               "3  NC",         "-"),
-    ("JA4",  "AA9",  "amp_shutdown_n", "4  ~SHUTDOWN",  ">"),
-    ("5",    "GND",  "",               "5  GND",        "p"),
-    ("6",    "3V3",  "",               "6  VCC",        "p")]),
+ ("JA1  (top row)", "Pmod DA2", "J1", "2 x DAC121S101 12-bit DAC", "#9467bd", [
+    ("JA1",  "Y11",  "dac_sync_n", "1  ~SYNC",  ">"),
+    ("JA2",  "AA11",  "dac_dina",   "2  DINA",   ">"),
+    ("JA3",  "Y10",  "dac_dinb",   "3  DINB",   ">"),
+    ("JA4",  "AA9",   "dac_sclk",   "4  SCLK",   ">"),
+    ("5",    "GND",  "",           "5  GND",    "p"),
+    ("6",    "3V3",  "",           "6  VCC",    "p")]),
  ("JB1  (both rows)", "Pmod KYPD  (PB200-195 rev B)", "J1", "4 x 4 key matrix, pull-ups on the rows", "#2ca02c", [
     ("JB1",  "W12",   "kypd_col[3]", "1  COL4",  ">"),
     ("JB2",  "W11",   "kypd_col[2]", "2  COL3",  ">"),
@@ -43,13 +43,13 @@ PORTS = [
     ("JC4",  "AA4",  "adc_sclk",   "4  SCK",   ">"),
     ("5",    "GND",  "",           "5  GND",   "p"),
     ("6",    "3V3",  "",           "6  VCC",   "p")]),
- ("JD1  (top row)", "Pmod DA2", "J1", "2 x DAC121S101 12-bit DAC", "#9467bd", [
-    ("JD1",  "V7",  "dac_sync_n", "1  ~SYNC",  ">"),
-    ("JD2",  "W7",  "dac_dina",   "2  DINA",   ">"),
-    ("JD3",  "V5",  "dac_dinb",   "3  DINB",   ">"),
-    ("JD4",  "V4",   "dac_sclk",   "4  SCLK",   ">"),
-    ("5",    "GND",  "",           "5  GND",    "p"),
-    ("6",    "3V3",  "",           "6  VCC",    "p")]),
+ ("JD1  (top row)", "Pmod AMP2  (PB200-233 rev B)", "J1", "SSM2377 class-D amplifier", "#d62728", [
+    ("JD1",  "V7",  "amp_ain",        "1  AIN",        ">"),
+    ("JD2",  "W7", "amp_gain",       "2  GAIN",       ">"),
+    ("JD3",  "V5",  "",               "3  NC",         "-"),
+    ("JD4",  "V4",  "amp_shutdown_n", "4  ~SHUTDOWN",  ">"),
+    ("5",    "GND",  "",               "5  GND",        "p"),
+    ("6",    "3V3",  "",               "6  VCC",        "p")]),
 ]
 
 def check_against_xdc():

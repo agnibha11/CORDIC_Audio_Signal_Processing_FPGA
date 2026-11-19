@@ -37,11 +37,12 @@ set_property -dict {PACKAGE_PIN W22 IOSTANDARD LVCMOS33} [get_ports {led[5]}]
 set_property -dict {PACKAGE_PIN U19 IOSTANDARD LVCMOS33} [get_ports {led[6]}]
 set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports {led[7]}]
 
-# ---------------- Pmod JA, bank 13 (3.3 V), top row: Pmod AMP2 ----------------
-# pin1 AIN, pin2 GAIN, pin3 NC, pin4 ~SHUTDOWN
-set_property -dict {PACKAGE_PIN Y11  IOSTANDARD LVCMOS33 SLEW SLOW DRIVE 8} [get_ports amp_ain]   ;# JA1
-set_property -dict {PACKAGE_PIN AA11 IOSTANDARD LVCMOS33} [get_ports amp_gain]                    ;# JA2
-set_property -dict {PACKAGE_PIN AA9  IOSTANDARD LVCMOS33} [get_ports amp_shutdown_n]              ;# JA4
+# ---------------- Pmod JA, bank 13 (3.3 V), top row: Pmod DA2 ----------------
+# pin1 ~SYNC, pin2 DINA, pin3 DINB, pin4 SCLK
+set_property -dict {PACKAGE_PIN Y11  IOSTANDARD LVCMOS33} [get_ports dac_sync_n]   ;# JA1
+set_property -dict {PACKAGE_PIN AA11 IOSTANDARD LVCMOS33} [get_ports dac_dina]     ;# JA2
+set_property -dict {PACKAGE_PIN Y10  IOSTANDARD LVCMOS33} [get_ports dac_dinb]     ;# JA3
+set_property -dict {PACKAGE_PIN AA9  IOSTANDARD LVCMOS33} [get_ports dac_sclk]     ;# JA4
 
 # ---------------- Pmod JB, bank 13 (3.3 V): Pmod KYPD ----------------
 # pin1 COL4, pin2 COL3, pin3 COL2, pin4 COL1, pin7 ROW4, pin8 ROW3, pin9 ROW2, pin10 ROW1
@@ -65,12 +66,11 @@ set_property -dict {PACKAGE_PIN AB7 IOSTANDARD LVCMOS33} [get_ports adc_cs_n]   
 set_property -dict {PACKAGE_PIN Y4  IOSTANDARD LVCMOS33} [get_ports adc_miso]     ;# JC3  (JC2_P)
 set_property -dict {PACKAGE_PIN AA4 IOSTANDARD LVCMOS33} [get_ports adc_sclk]     ;# JC4  (JC2_N)
 
-# ---------------- Pmod JD, bank 13 (3.3 V), top row: Pmod DA2 ----------------
-# pin1 ~SYNC, pin2 DINA, pin3 DINB, pin4 SCLK
-set_property -dict {PACKAGE_PIN V7  IOSTANDARD LVCMOS33} [get_ports dac_sync_n]   ;# JD1  (JD1_P)
-set_property -dict {PACKAGE_PIN W7  IOSTANDARD LVCMOS33} [get_ports dac_dina]     ;# JD2  (JD1_N)
-set_property -dict {PACKAGE_PIN V5  IOSTANDARD LVCMOS33} [get_ports dac_dinb]     ;# JD3  (JD2_P)
-set_property -dict {PACKAGE_PIN V4  IOSTANDARD LVCMOS33} [get_ports dac_sclk]     ;# JD4  (JD2_N)
+# ---------------- Pmod JD, bank 13 (3.3 V), top row: Pmod AMP2 ----------------
+# pin1 AIN, pin2 GAIN, pin3 NC, pin4 ~SHUTDOWN
+set_property -dict {PACKAGE_PIN V7 IOSTANDARD LVCMOS33 SLEW SLOW DRIVE 8} [get_ports amp_ain]   ;# JD1  (JD1_P)
+set_property -dict {PACKAGE_PIN W7 IOSTANDARD LVCMOS33} [get_ports amp_gain]                    ;# JD2  (JD1_N)
+set_property -dict {PACKAGE_PIN V4 IOSTANDARD LVCMOS33} [get_ports amp_shutdown_n]              ;# JD4  (JD2_N)
 
 
 # ---------------- VGA, bank 33 (3.3 V) ----------------
