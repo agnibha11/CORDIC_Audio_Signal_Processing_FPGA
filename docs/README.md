@@ -654,7 +654,7 @@ SDATA ---<  0   0   0   0  D11 D10  D9 ...            D1  D0 >---
 The result is an unsigned number 0 to 4095 where about 2048 means "no sound". `mic_adc_spi` runs
 SCLK at 5 MHz, so a conversion takes 3.3 microseconds out of the 20 available.
 
-### 7.2 Pmod DA2 on JB
+### 7.2 Pmod DA2 on JD
 
 *What is on it:* two Texas Instruments **DAC121S101** 12-bit digital-to-analog converters. They
 share the SYNC and SCLK lines and have one data line each (DINA, DINB), so one 16-clock frame
@@ -708,7 +708,7 @@ sources; SW7 shuts the amplifier down. The amplifier is also held off during res
 audio, the loudspeaker's sound re-enters the microphone and the system can howl. Keep them apart,
 reduce the volume, or use the internal tone (key `7`).
 
-### 7.4 Pmod KYPD (PB200-195 rev B) on JD
+### 7.4 Pmod KYPD (PB200-195 rev B) on JB
 
 *What is on it:* sixteen push buttons at the crossings of four **column** wires and four **row**
 wires, and a pull-up resistor on every row. Nothing else: no chip.
@@ -1167,9 +1167,9 @@ All run with Icarus Verilog 12 (`iverilog -g2012`); the same files run in Vivado
 * **No hardware run** yet (see the status note at the top).
 * The analog behaviour of the Pmods (microphone level and compression, amplifier loudness, DAC
   settling) is not modelled; the benches cover the digital interfaces.
-* The pin numbering of ports JC and JD was taken from the ZedBoard schematic's net order
-  (pin 1 = `_P`, pin 2 = `_N` of each pair); `TESTING.md` step 4 confirms it with a multimeter
-  before anything depends on it.
+* The pin numbering of ports JC and JD (pin 1 = `_P`, pin 2 = `_N` of each pair) is taken from
+  the ZedBoard schematic's Pmod header sheet, which is the reference; the Hardware User's Guide
+  table lists N before P and is not (`WIRING.md` section 4).
 
 ### 9.4 Bugs found on the way (worth knowing)
 
@@ -1263,8 +1263,8 @@ From `scripts/build_bitstream.tcl` (Vivado 2025.2, default strategies, reports i
 
 | Resource | Design | VIO + debug hub | Total | of device |
 |---|---|---|---|---|
-| Slice LUTs | 3 511 | 1 553 | 5 064 | 9.5 % |
-| Slice registers | 3 416 | 2 800 | 6 216 | 5.8 % |
+| Slice LUTs | 3 508 | 1 553 | 5 061 | 9.5 % |
+| Slice registers | 3 417 | 2 800 | 6 217 | 5.8 % |
 | DSP48E1 | 20 | 0 | 20 | 9.1 % |
 | RAMB36 | 3 | 0 | 3 | 2.1 % |
 | Latches | 0 | 0 | 0 | |
@@ -1272,12 +1272,12 @@ From `scripts/build_bitstream.tcl` (Vivado 2025.2, default strategies, reports i
 
 | Block | LUTs | Registers | DSP48E1 |
 |---|---|---|---|
-| `fm_dsp_core` | 1 648 | 1 948 | 11 |
-| `cordic_engine` (inside it) | 374 | 81 | 0 |
+| `fm_dsp_core` | 1 645 | 1 949 | 11 |
+| `cordic_engine` (inside it) | 375 | 81 | 0 |
 | `awgn_gen` (inside it) | 135 | 141 | 1 |
-| `audio_lpf` x 2 (inside it) | 512 | 1 215 | 0 |
+| `audio_lpf` x 2 (inside it) | 509 | 1 216 | 0 |
 | `fidelity_meter` | 327 | 306 | 2 |
-| `param_controller`, `recip_divider` | 390 | 242 | 6 |
+| `param_controller`, `recip_divider` | 388 | 242 | 6 |
 | `vga_timing`, `vga_scope_render` | 597 | 341 | 1 |
 | `capture_scope_ram` | 119 | 32 | 0 (3 RAMB36) |
 
@@ -1285,10 +1285,10 @@ The two audio filters hold most of the registers: each keeps 16 delay-line words
 The VIO alone is larger than the CORDIC, the noise generator and the meter together; it is a
 bring-up tool and can be left out (build without `USE_VIO`).
 
-Power estimate: 0.221 W on chip (0.114 W dynamic, 0.108 W static), junction 27.6 °C. The
+Power estimate: 0.221 W on chip (0.113 W dynamic, 0.108 W static), junction 27.6 °C. The
 estimate uses default switching activity and Vivado rates its confidence as low.
 
-Timing (post-route, slow corner, 10 ns): setup WNS +0.193 ns, hold WHS +0.032 ns, no failing
+Timing (post-route, slow corner, 10 ns): setup WNS +0.171 ns, hold WHS +0.014 ns, no failing
 endpoints; all constraints met. The critical path is in the receiver's `audio_lpf`, from the
 stage counter through the accumulator adder and rounding to the saturated output. If a future
 change pushes it negative, register `nv` before the saturation (one more clock per sample, of

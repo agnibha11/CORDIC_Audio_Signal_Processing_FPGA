@@ -127,11 +127,12 @@ is right on silicon, because the model is bit-exact.
 
 5. Set `probe_out9 = 0`, `probe_out5 = 0`. Leave the override on for now.
 
-## Step 4. Pmod port pins with a multimeter (before plugging any Pmod)
+## Step 4. Pmod port pins with a multimeter (optional, before plugging any Pmod)
 
-Purpose: confirm that the FPGA signals are on the header pins the wiring table says, in
-particular on port JC, where a P/N swap would make the FPGA drive the microphone's output pin
-(see `WIRING.md` section 4). DC voltage range, black lead on pin 5 (GND) of the same row. The
+Purpose: confirm that the FPGA signals are on the header pins the wiring table says. The JC and
+JD pin order is confirmed on the ZedBoard schematic (`WIRING.md` section 4), so this step is an
+extra safety check, mainly for JC, where a swap would make the FPGA drive the microphone's output
+pin. DC voltage range, black lead on pin 5 (GND) of the same row. The
 signals toggle fast; a multimeter shows their average.
 
 | Port pin | Signal | Expected reading | Then |
@@ -140,14 +141,14 @@ signals toggle fast; a multimeter shows their average.
 | JA2 | `amp_gain` | 3.3 V | SW6 up: 0 V |
 | JA4 | `amp_shutdown_n` | 3.3 V | SW7 up: 0 V |
 | JA1 | `amp_ain` | about 1.65 V (a 50 % bit stream) | steady |
-| JB1 | `dac_sync_n` | about 2.75 V (high except 3.3 of every 20 microseconds) | |
-| JB4 | `dac_sclk` | about 0.25 V | |
-| JB2, JB3 | `dac_dina`, `dac_dinb` | between 0 and about 0.3 V, varying | |
+| JB1 to JB4 | `kypd_col` | about 2.5 V each (low one quarter of the time) | |
+| JB7 to JB10 | `kypd_row` (inputs, pull-up) | about 3.3 V | |
 | JC1 | `adc_cs_n` | about 2.75 V | |
 | JC4 | `adc_sclk` | about 3.0 V (idles high) | |
 | JC2, JC3 | not used / `adc_miso` (input) | no defined reading | |
-| JD1 to JD4 | `kypd_col` | about 2.5 V each (low one quarter of the time) | |
-| JD7 to JD10 | `kypd_row` (inputs, pull-up) | about 3.3 V | |
+| JD1 | `dac_sync_n` | about 2.75 V (high except 3.3 of every 20 microseconds) | |
+| JD4 | `dac_sclk` | about 0.25 V | |
+| JD2, JD3 | `dac_dina`, `dac_dinb` | between 0 and about 0.3 V, varying | |
 
 If JC2 reads 2.75 V instead of JC1, or JC3 reads 3.0 V instead of JC4, the P/N order of the pairs
 on JC is the other way round on your board: apply the fix in `WIRING.md` section 4, rebuild,
@@ -155,9 +156,9 @@ repeat this step. **Do not plug the MIC in before JC1 and JC4 read as in the tab
 
 Put SW6 and SW7 down again.
 
-## Step 5. Pmod DA2 on JB, oscilloscope
+## Step 5. Pmod DA2 on JD, oscilloscope
 
-Power off, plug the DA2 into the **top row of JB**, power on, program, repeat the VIO settings of
+Power off, plug the DA2 into the **top row of JD**, power on, program, repeat the VIO settings of
 step 3. Scope CH1 on DA2 J2 pin 1 (VOUTA), CH2 on J2 pin 3 (VOUTB), grounds on J2 pin 5.
 Both channels DC-coupled, 500 mV/div, 500 microseconds/div, trigger on CH2.
 
@@ -173,9 +174,9 @@ Both channels DC-coupled, 500 mV/div, 500 microseconds/div, trigger on CH2.
 A flat line at 1.65 V on both: the DAC is receiving frames of mid-scale, check the VIO source
 setting. 0 V or 3.3 V stuck: wiring or orientation.
 
-## Step 6. Pmod KYPD on JD
+## Step 6. Pmod KYPD on JB
 
-Power off, plug the keypad into JD (directly or with a 12-pin cable), power on, program.
+Power off, plug the keypad into JB (directly or with a 12-pin cable), power on, program.
 In the VIO set `probe_out0 = 0` (override off): the keypad is now in control.
 Put **SW3 up**: the LEDs now show the key code, LD7 lights while a key is held.
 

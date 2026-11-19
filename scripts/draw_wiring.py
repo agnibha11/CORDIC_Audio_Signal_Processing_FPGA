@@ -23,13 +23,19 @@ PORTS = [
     ("JA4",  "AA9",  "amp_shutdown_n", "4  ~SHUTDOWN",  ">"),
     ("5",    "GND",  "",               "5  GND",        "p"),
     ("6",    "3V3",  "",               "6  VCC",        "p")]),
- ("JB1  (top row)", "Pmod DA2", "J1", "2 x DAC121S101 12-bit DAC", "#9467bd", [
-    ("JB1",  "W12",  "dac_sync_n", "1  ~SYNC",  ">"),
-    ("JB2",  "W11",  "dac_dina",   "2  DINA",   ">"),
-    ("JB3",  "V10",  "dac_dinb",   "3  DINB",   ">"),
-    ("JB4",  "W8",   "dac_sclk",   "4  SCLK",   ">"),
-    ("5",    "GND",  "",           "5  GND",    "p"),
-    ("6",    "3V3",  "",           "6  VCC",    "p")]),
+ ("JB1  (both rows)", "Pmod KYPD  (PB200-195 rev B)", "J1", "4 x 4 key matrix, pull-ups on the rows", "#2ca02c", [
+    ("JB1",  "W12",   "kypd_col[3]", "1  COL4",  ">"),
+    ("JB2",  "W11",   "kypd_col[2]", "2  COL3",  ">"),
+    ("JB3",  "V10",   "kypd_col[1]", "3  COL2",  ">"),
+    ("JB4",  "W8",   "kypd_col[0]", "4  COL1",  ">"),
+    ("5",    "GND",  "",            "5  GND",   "p"),
+    ("6",    "3V3",  "",            "6  VCC",   "p"),
+    ("JB7",  "V12",   "kypd_row[3]", "7  ROW4",  "<"),
+    ("JB8",  "W10",   "kypd_row[2]", "8  ROW3",  "<"),
+    ("JB9",  "V9",   "kypd_row[1]", "9  ROW2",  "<"),
+    ("JB10", "V8",   "kypd_row[0]", "10 ROW1",  "<"),
+    ("11",   "GND",  "",            "11 GND",   "p"),
+    ("12",   "3V3",  "",            "12 VCC",   "p")]),
  ("JC1  (top row)", "Pmod MIC  (PB200-122 rev B)", "J1", "microphone + ADCS7476 12-bit ADC", "#1f77b4", [
     ("JC1",  "AB7",  "adc_cs_n",   "1  SS",    ">"),
     ("JC2",  "AB6",  "",           "2  NC",    "-"),
@@ -37,19 +43,13 @@ PORTS = [
     ("JC4",  "AA4",  "adc_sclk",   "4  SCK",   ">"),
     ("5",    "GND",  "",           "5  GND",   "p"),
     ("6",    "3V3",  "",           "6  VCC",   "p")]),
- ("JD1  (both rows)", "Pmod KYPD  (PB200-195 rev B)", "J1", "4 x 4 key matrix, pull-ups on the rows", "#2ca02c", [
-    ("JD1",  "V7",   "kypd_col[3]", "1  COL4",  ">"),
-    ("JD2",  "W7",   "kypd_col[2]", "2  COL3",  ">"),
-    ("JD3",  "V5",   "kypd_col[1]", "3  COL2",  ">"),
-    ("JD4",  "V4",   "kypd_col[0]", "4  COL1",  ">"),
-    ("5",    "GND",  "",            "5  GND",   "p"),
-    ("6",    "3V3",  "",            "6  VCC",   "p"),
-    ("JD7",  "W6",   "kypd_row[3]", "7  ROW4",  "<"),
-    ("JD8",  "W5",   "kypd_row[2]", "8  ROW3",  "<"),
-    ("JD9",  "U6",   "kypd_row[1]", "9  ROW2",  "<"),
-    ("JD10", "U5",   "kypd_row[0]", "10 ROW1",  "<"),
-    ("11",   "GND",  "",            "11 GND",   "p"),
-    ("12",   "3V3",  "",            "12 VCC",   "p")]),
+ ("JD1  (top row)", "Pmod DA2", "J1", "2 x DAC121S101 12-bit DAC", "#9467bd", [
+    ("JD1",  "V7",  "dac_sync_n", "1  ~SYNC",  ">"),
+    ("JD2",  "W7",  "dac_dina",   "2  DINA",   ">"),
+    ("JD3",  "V5",  "dac_dinb",   "3  DINB",   ">"),
+    ("JD4",  "V4",   "dac_sclk",   "4  SCLK",   ">"),
+    ("5",    "GND",  "",           "5  GND",    "p"),
+    ("6",    "3V3",  "",           "6  VCC",    "p")]),
 ]
 
 def check_against_xdc():

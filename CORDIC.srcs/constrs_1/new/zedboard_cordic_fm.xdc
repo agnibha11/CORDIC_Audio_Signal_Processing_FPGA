@@ -43,15 +43,19 @@ set_property -dict {PACKAGE_PIN Y11  IOSTANDARD LVCMOS33 SLEW SLOW DRIVE 8} [get
 set_property -dict {PACKAGE_PIN AA11 IOSTANDARD LVCMOS33} [get_ports amp_gain]                    ;# JA2
 set_property -dict {PACKAGE_PIN AA9  IOSTANDARD LVCMOS33} [get_ports amp_shutdown_n]              ;# JA4
 
-# ---------------- Pmod JB, bank 13 (3.3 V), top row: Pmod DA2 ----------------
-# pin1 ~SYNC, pin2 DINA, pin3 DINB, pin4 SCLK
-set_property -dict {PACKAGE_PIN W12 IOSTANDARD LVCMOS33} [get_ports dac_sync_n]   ;# JB1
-set_property -dict {PACKAGE_PIN W11 IOSTANDARD LVCMOS33} [get_ports dac_dina]     ;# JB2
-set_property -dict {PACKAGE_PIN V10 IOSTANDARD LVCMOS33} [get_ports dac_dinb]     ;# JB3
-set_property -dict {PACKAGE_PIN W8  IOSTANDARD LVCMOS33} [get_ports dac_sclk]     ;# JB4
+# ---------------- Pmod JB, bank 13 (3.3 V): Pmod KYPD ----------------
+# pin1 COL4, pin2 COL3, pin3 COL2, pin4 COL1, pin7 ROW4, pin8 ROW3, pin9 ROW2, pin10 ROW1
+set_property -dict {PACKAGE_PIN W12 IOSTANDARD LVCMOS33} [get_ports {kypd_col[3]}] ;# JB1  COL4
+set_property -dict {PACKAGE_PIN W11 IOSTANDARD LVCMOS33} [get_ports {kypd_col[2]}] ;# JB2  COL3
+set_property -dict {PACKAGE_PIN V10 IOSTANDARD LVCMOS33} [get_ports {kypd_col[1]}] ;# JB3  COL2
+set_property -dict {PACKAGE_PIN W8  IOSTANDARD LVCMOS33} [get_ports {kypd_col[0]}] ;# JB4  COL1
+set_property -dict {PACKAGE_PIN V12 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[3]}] ;# JB7  ROW4
+set_property -dict {PACKAGE_PIN W10 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[2]}] ;# JB8  ROW3
+set_property -dict {PACKAGE_PIN V9  IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[1]}] ;# JB9  ROW2
+set_property -dict {PACKAGE_PIN V8  IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[0]}] ;# JB10 ROW1
 
-# JC and JD are routed as differential pairs.  Header pin numbers (ZedBoard
-# schematic, sheet "PMODs and General I/O"):  pin 1 = Jx1_P, pin 2 = Jx1_N,
+# JC and JD are routed as differential pairs.  Header pin numbers (confirmed on the
+# ZedBoard schematic, Pmod header sheet):  pin 1 = Jx1_P, pin 2 = Jx1_N,
 # pin 3 = Jx2_P, pin 4 = Jx2_N, pin 7 = Jx3_P, pin 8 = Jx3_N, pin 9 = Jx4_P, pin 10 = Jx4_N.
 # (JE is wired to the processor's MIO pins and cannot be used by PL logic.)
 
@@ -61,16 +65,12 @@ set_property -dict {PACKAGE_PIN AB7 IOSTANDARD LVCMOS33} [get_ports adc_cs_n]   
 set_property -dict {PACKAGE_PIN Y4  IOSTANDARD LVCMOS33} [get_ports adc_miso]     ;# JC3  (JC2_P)
 set_property -dict {PACKAGE_PIN AA4 IOSTANDARD LVCMOS33} [get_ports adc_sclk]     ;# JC4  (JC2_N)
 
-# ---------------- Pmod JD, bank 13 (3.3 V): Pmod KYPD ----------------
-# pin1 COL4, pin2 COL3, pin3 COL2, pin4 COL1, pin7 ROW4, pin8 ROW3, pin9 ROW2, pin10 ROW1
-set_property -dict {PACKAGE_PIN V7 IOSTANDARD LVCMOS33} [get_ports {kypd_col[3]}] ;# JD1  COL4 (JD1_P)
-set_property -dict {PACKAGE_PIN W7 IOSTANDARD LVCMOS33} [get_ports {kypd_col[2]}] ;# JD2  COL3 (JD1_N)
-set_property -dict {PACKAGE_PIN V5 IOSTANDARD LVCMOS33} [get_ports {kypd_col[1]}] ;# JD3  COL2 (JD2_P)
-set_property -dict {PACKAGE_PIN V4 IOSTANDARD LVCMOS33} [get_ports {kypd_col[0]}] ;# JD4  COL1 (JD2_N)
-set_property -dict {PACKAGE_PIN W6 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[3]}] ;# JD7  ROW4 (JD3_P)
-set_property -dict {PACKAGE_PIN W5 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[2]}] ;# JD8  ROW3 (JD3_N)
-set_property -dict {PACKAGE_PIN U6 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[1]}] ;# JD9  ROW2 (JD4_P)
-set_property -dict {PACKAGE_PIN U5 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[0]}] ;# JD10 ROW1 (JD4_N)
+# ---------------- Pmod JD, bank 13 (3.3 V), top row: Pmod DA2 ----------------
+# pin1 ~SYNC, pin2 DINA, pin3 DINB, pin4 SCLK
+set_property -dict {PACKAGE_PIN V7  IOSTANDARD LVCMOS33} [get_ports dac_sync_n]   ;# JD1  (JD1_P)
+set_property -dict {PACKAGE_PIN W7  IOSTANDARD LVCMOS33} [get_ports dac_dina]     ;# JD2  (JD1_N)
+set_property -dict {PACKAGE_PIN V5  IOSTANDARD LVCMOS33} [get_ports dac_dinb]     ;# JD3  (JD2_P)
+set_property -dict {PACKAGE_PIN V4  IOSTANDARD LVCMOS33} [get_ports dac_sclk]     ;# JD4  (JD2_N)
 
 
 # ---------------- VGA, bank 33 (3.3 V) ----------------
