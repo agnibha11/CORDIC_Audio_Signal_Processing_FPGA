@@ -100,19 +100,6 @@ Loudspeaker: 3.5 mm mono jack J2 on the Pmod AMP2.
 | SW0 .. SW7 | F22, G22, H22, F21, H19, H18, H17, M15 |
 | LD0 .. LD7 | T22, T21, U22, U21, V22, W22, U19, U14 |
 
-### On-board audio codec (ADAU1761)
-
-| Function | FPGA pin | RTL port | Dir |
-|---|---|---|---|
-| Master clock, 10 MHz | AB2 | `ac_mclk` | out |
-| I2S bit clock (AC-GPIO2) | AA6 | `ac_bclk` | out |
-| I2S left/right clock (AC-GPIO3) | Y6 | `ac_lrclk` | out |
-| I2S data to the DAC (AC-GPIO0) | Y8 | `ac_sdata` | out |
-| I2C address bits 0, 1 (both high: address 0x3B) | AB1, Y5 | `ac_adr0`, `ac_adr1` | out |
-| I2C clock, data (open drain) | AB4, AB5 | `ac_scl`, `ac_sda` | out / in-out |
-
-Audio comes out of the board's HPH OUT (earphones) and LINE OUT jacks. No wiring is needed.
-
 ## 3. How to plug a Pmod in correctly
 
 * Power off while plugging.

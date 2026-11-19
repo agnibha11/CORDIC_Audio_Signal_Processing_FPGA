@@ -28,7 +28,6 @@ cd $root
 if {[file exists "$proj_dir/$proj_name.xpr"]} {
     puts "vivado/CORDIC.xpr already exists -- opening it.  Delete vivado/ first for a fresh project."
     open_project "$proj_dir/$proj_name.xpr"
-    source "$root/scripts/sync_sources.tcl"
     return
 }
 create_project $proj_name $proj_dir -part $part

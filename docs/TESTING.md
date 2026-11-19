@@ -17,7 +17,7 @@ the report.
 ## Step 0. Before touching the hardware: simulation regression
 
 Either in Vivado (`source scripts/run_sims.tcl`, about 30 minutes) or with Icarus Verilog
-(handbook section 12.2). All thirteen benches must end with `ALL PASS`.
+(handbook section 12.2). All twelve benches must end with `ALL PASS`.
 
 | Bench | Expected last line |
 |---|---|
@@ -31,8 +31,7 @@ Either in Vivado (`source scripts/run_sims.tcl`, about 30 minutes) or with Icaru
 | `tb_kypd_scanner` | `ALL PASS (70 checks)` |
 | `tb_recip_divider` | `ALL PASS (1417 checks)` |
 | `tb_fm_dsp_core` | `ALL PASS (14502 checks)` |
-| `tb_adau1761_out` | `ALL PASS (16 checks)` |
-| `tb_cordic_fm_top` | `ALL PASS (18 checks)` |
+| `tb_cordic_fm_top` | `ALL PASS (16 checks)` |
 | `tb_cordic_fm_system` | `ALL PASS (859 checks)` |
 
 ## Step 1. Build
@@ -252,27 +251,6 @@ the top row of JD, loudspeaker into its jack, power on, program.
 
 No sound at all: SW7; jack; step 4 readings on JD; speaker impedance (4 to 8 ohm, or powered
 speakers). A loud hum or whistle that depends on where the speaker is: acoustic feedback, see step 8.
-
-## Step 7b. On-board audio codec: HPH OUT and LINE OUT
-
-The ZedBoard's own ADAU1761 codec plays the same signal as the AMP2 (the `MON` selection, with
-the SW4/SW5 volume and SW7 mute), in stereo, on the **HPH OUT** jack (earphones) and the
-**LINE OUT** jack (powered speakers). The FPGA configures the codec over I2C about 50 ms after
-reset; no Pmod is involved.
-
-1. Earphones into HPH OUT, volume low first (SW4 and SW5 up), `7` (tone), SW7 down.
-
-| Check | Expected |
-|---|---|
-| LD7 | normal 1 Hz heartbeat. A fast blink (about 3 Hz) means the codec did not acknowledge an I2C write: check that nothing else drives the codec, then report it |
-| Sound in **both** ears | the 400 Hz tone, the same as the AMP2 |
-| SW4 / SW5, SW7, `D` | volume, mute and monitor act exactly as on the AMP2 |
-| LINE OUT into powered speakers | the same signal at line level |
-
-If LD7 blinks normally but there is no sound, the codec's PLL is probably not accepting the
-50 kHz rate. Rebuild with the codec at 48 kHz: in `cordic_fm_top.v` change
-`parameter integer CODEC_FS = 50_000` to `48_000` (the sample is then held from the 50 kHz
-stream), run `source scripts/build_bitstream.tcl`, and try again.
 
 ## Step 8. Pmod MIC on JC
 

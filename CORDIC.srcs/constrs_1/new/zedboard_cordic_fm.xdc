@@ -89,17 +89,6 @@ set_property -dict {PACKAGE_PIN AB19 IOSTANDARD LVCMOS33} [get_ports {vga_b[3]}]
 set_property -dict {PACKAGE_PIN AA19 IOSTANDARD LVCMOS33} [get_ports vga_hs]
 set_property -dict {PACKAGE_PIN Y19  IOSTANDARD LVCMOS33} [get_ports vga_vs]
 
-# ---------------- on-board audio codec ADAU1761, bank 13 (3.3 V) ----------------
-# FPGA is the I2S clock master and supplies MCLK; I2C (SCK/SDA) is open drain.
-set_property -dict {PACKAGE_PIN AB2 IOSTANDARD LVCMOS33} [get_ports ac_mclk]    ;# AC-MCLK
-set_property -dict {PACKAGE_PIN AA6 IOSTANDARD LVCMOS33} [get_ports ac_bclk]    ;# AC-GPIO2, bit clock
-set_property -dict {PACKAGE_PIN Y6  IOSTANDARD LVCMOS33} [get_ports ac_lrclk]   ;# AC-GPIO3, left/right clock
-set_property -dict {PACKAGE_PIN Y8  IOSTANDARD LVCMOS33} [get_ports ac_sdata]   ;# AC-GPIO0, data to the DAC
-set_property -dict {PACKAGE_PIN AB1 IOSTANDARD LVCMOS33} [get_ports ac_adr0]    ;# AC-ADR0 (I2C address bit 0)
-set_property -dict {PACKAGE_PIN Y5  IOSTANDARD LVCMOS33} [get_ports ac_adr1]    ;# AC-ADR1 (I2C address bit 1)
-set_property -dict {PACKAGE_PIN AB4 IOSTANDARD LVCMOS33 PULLUP true} [get_ports ac_scl]  ;# AC-SCK
-set_property -dict {PACKAGE_PIN AB5 IOSTANDARD LVCMOS33 PULLUP true} [get_ports ac_sda]  ;# AC-SDA
-
 # ---------------- timing exceptions ----------------
 # Every input is resynchronised with two flops and every output is a slow
 # (<= 25 MHz) registered signal whose consumers do not care about ns-level
@@ -108,10 +97,6 @@ set_property -dict {PACKAGE_PIN AB5 IOSTANDARD LVCMOS33 PULLUP true} [get_ports 
 # clocks, and need no clock constraint.
 set_false_path -from [get_ports {btn_rst btn_u btn_l btn_r btn_c sw[*] kypd_row[*] adc_miso}]
 set_false_path -to   [get_ports {led[*] kypd_col[*] adc_cs_n adc_sclk dac_sync_n dac_dina dac_dinb dac_sclk amp_ain amp_gain amp_shutdown_n vga_r[*] vga_g[*] vga_b[*] vga_hs vga_vs}]
-
-# codec pins: slow registered signals (MCLK 10 MHz, BCLK 3.2 MHz, I2C 100 kHz)
-set_false_path -to   [get_ports {ac_mclk ac_bclk ac_lrclk ac_sdata ac_adr0 ac_adr1 ac_scl ac_sda}]
-set_false_path -from [get_ports ac_sda]
 
 # place the SPI, bit-stream and VGA output registers in the IOBs for clean, skew-free edges.
 # The SPI clocks are packable because the state machines read a separate copy (sclk_nq).

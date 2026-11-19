@@ -198,7 +198,6 @@ flowchart TD
 | Digilent Pmod KYPD | JB | 16-key control panel |
 | Digilent Pmod MIC | JC, top row | Microphone and 12-bit ADC |
 | Digilent Pmod AMP2 | JD, top row | Class-D amplifier for a loudspeaker |
-| On-board ADAU1761 codec | HPH OUT, LINE OUT jacks | The same audio in stereo, configured over I2C by the FPGA |
 
 Also used: the on-board VGA connector, slide switches, push-buttons and LEDs. A loudspeaker
 (4 to 8 Ω, 3.5 mm plug) and a VGA monitor are required; an oscilloscope is optional.
@@ -232,7 +231,7 @@ parameter can also be set and every internal measurement read over JTAG through 
 
 ## Verification
 
-Thirteen self-checking test benches cover every module and the complete system.
+Twelve self-checking test benches cover every module and the complete system.
 
 | Bench | Scope | Checks |
 |---|---|---|
@@ -246,14 +245,11 @@ Thirteen self-checking test benches cover every module and the complete system.
 | `tb_kypd_scanner` | Matrix scan, debounce, multi-key rejection | 70 |
 | `tb_recip_divider` | Receiver gain divider | 1417 |
 | `tb_fm_dsp_core` | **DSP core bit-exact against the model: 2900 samples, five signals, all modes, with noise** | 14502 |
-| `tb_adau1761_out` | Codec output: I2C register sequence against a slave model, I2S framing and data | 16 |
-| `tb_cordic_fm_top` | Top level: power-on reset, pads, codec clocks | 18 |
+| `tb_cordic_fm_top` | Top level: power-on reset, pads | 16 |
 | `tb_cordic_fm_system` | Full system through the device models: user interface, SNR against theory, capture, VGA timing | 859 |
 
-The twelve original benches pass in Vivado XSim 2025.2 (`scripts/run_sims.tcl`) and in Icarus
-Verilog 12, with identical results: the system bench reports the same SNR values to 0.01 dB in
-both. The codec bench `tb_adau1761_out`, added with the on-board codec output, passes in Icarus
-Verilog. The design also elaborates without errors under `slang`
+All twelve benches pass in Vivado XSim 2025.2 (`scripts/run_sims.tcl`) and in Icarus Verilog
+12, with identical results: the system bench reports the same SNR values to 0.01 dB in both. The design also elaborates without errors under `slang`
 (`scripts/lint_slang.py`).
 
 ## Implementation

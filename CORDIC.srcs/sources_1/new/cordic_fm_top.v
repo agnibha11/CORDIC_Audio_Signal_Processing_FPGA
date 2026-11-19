@@ -10,15 +10,12 @@
 //  Pmod JD top row (1-4)     : Pmod AMP2   -- AIN, GAIN, (nc), ~SHUTDOWN
 //  Pmod JA top row (1-4)     : Pmod DA2    -- ~SYNC, DINA, DINB, SCLK
 //  VGA                       : on-board connector (4-4-4 resistor DAC)
-//  Audio codec ADAU1761      : on-board; plays the monitor signal on HPH OUT
-//                              and LINE OUT (same signal as the Pmod AMP2)
 //  BTND reset   BTNU mode   BTNL/BTNR carrier -/+   BTNC hold/run
 //  SW1:0 scope time base (x1, x2, x4)   SW2 overlay = error x16
 //  SW3 LEDs show key code   SW5:4 loudspeaker volume (0 / -6 / -12 / -18 dB)
 //  SW6 loudspeaker amplifier +6 dB   SW7 loudspeaker mute
 //  LEDs: LD0-1 mode  LD2 source(tone)  LD3 hold  LD4 channel noise on
-//        LD5 clip    LD6 key activity  LD7 1 Hz heartbeat (fast blink: the
-//        audio codec did not acknowledge its I2C set-up)
+//        LD5 clip    LD6 key activity  LD7 1 Hz heartbeat
 //
 //  Reset: the FPGA configures every flip-flop to 0, which is NOT the reset
 //  state of the design (parameter defaults, the noise generator's seed).  A
@@ -29,9 +26,7 @@
 //  create_project.tcl does for the synthesis file set, so the same top level
 //  simulates without any IP.
 // ============================================================================
-module cordic_fm_top #(
-    parameter integer CODEC_FS = 50_000         // 48_000 = fallback codec rate
-)(
+module cordic_fm_top (
     input  wire       clk100,
     input  wire       btn_rst,
     input  wire       btn_u,
@@ -61,16 +56,7 @@ module cordic_fm_top #(
     output wire [3:0] vga_g,
     output wire [3:0] vga_b,
     output wire       vga_hs,
-    output wire       vga_vs,
-    // on-board audio codec ADAU1761
-    output wire       ac_mclk,
-    output wire       ac_bclk,
-    output wire       ac_lrclk,
-    output wire       ac_sdata,
-    output wire       ac_adr0,
-    output wire       ac_adr1,
-    inout  wire       ac_scl,
-    inout  wire       ac_sda
+    output wire       vga_vs
 );
     // ------------------------------------------------------------------
     // power-on reset + synchronisers (every asynchronous input crosses two flops)
@@ -158,22 +144,7 @@ module cordic_fm_top #(
             else if (key_act_cnt != 25'd0) key_act_cnt <= key_act_cnt - 25'd1;
         end
     end
-    // ------------------------------------------------------------------
-    // on-board audio codec: same signal, volume and mute as the Pmod AMP2
-    // ------------------------------------------------------------------
-    wire codec_done, codec_nack, codec_scl_o, codec_sda_o;
-    wire signed [15:0] codec_sample = s_sw[7] ? 16'sd0 : (mon_sample >>> s_sw[5:4]);
-    adau1761_out #(.FS(CODEC_FS)) u_codec (
-        .clk(clk100), .rst(rst), .sample(codec_sample),
-        .ac_mclk(ac_mclk), .ac_bclk(ac_bclk), .ac_lrclk(ac_lrclk), .ac_sdata(ac_sdata),
-        .ac_adr0(ac_adr0), .ac_adr1(ac_adr1),
-        .scl_o(codec_scl_o), .sda_o(codec_sda_o), .sda_in(ac_sda),
-        .cfg_done(codec_done), .cfg_nack(codec_nack)
-    );
-    assign ac_scl = codec_scl_o ? 1'bz : 1'b0;     // open drain
-    assign ac_sda = codec_sda_o ? 1'bz : 1'b0;
-
-    wire heartbeat = codec_nack ? hb_cnt[24] : (hb_cnt < 27'd50_000_000);
+    wire heartbeat = (hb_cnt < 27'd50_000_000);
     wire key_act   = (key_act_cnt != 25'd0);
     wire noise_on  = (noise_idx != 5'd0);
 
