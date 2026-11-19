@@ -1400,7 +1400,7 @@ The repository folder name must not contain spaces.
 # Vivado Tcl console
 cd <repository folder>
 source create_project.tcl            ;# creates vivado/CORDIC.xpr and the VIO core vio_0
-source scripts/run_sims.tcl          ;# all 12 benches in XSim, PASS/FAIL table (about 30 min)
+source scripts/run_sims.tcl          ;# all 13 benches in XSim, PASS/FAIL table (about 30 min)
 source scripts/build_bitstream.tcl   ;# synthesis, implementation, bitstream, reports/
 ```
 

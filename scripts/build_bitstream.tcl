@@ -8,6 +8,7 @@
 set here [file normalize [file dirname [info script]]]
 set root [file normalize "$here/.."]
 if {![file exists "$root/vivado/CORDIC.xpr"]} { source "$root/create_project.tcl" } elseif {[catch {current_project}]} { open_project "$root/vivado/CORDIC.xpr" }
+source "$root/scripts/sync_sources.tcl"
 file mkdir "$root/reports"
 
 reset_run synth_1

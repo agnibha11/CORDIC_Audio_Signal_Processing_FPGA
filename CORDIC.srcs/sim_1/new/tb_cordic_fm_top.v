@@ -8,7 +8,9 @@
 //  Runs 40 samples: the ADC model must see conversions, the DAC models
 //  updates, the AMP2 pin must toggle, LED7 heartbeat / mode LEDs / key-code
 //  LED mode must behave (full-speed keypad timing: one press costs ~12 ms of
-//  simulated time), BTNU and the switches must act.
+//  simulated time), BTNU and the switches must act.  The on-board codec
+//  outputs must run (MCLK, I2S clocks, address pins); its I2C set-up starts
+//  after 50 ms and is checked in tb_adau1761_out.
 // ============================================================================
 module tb_cordic_fm_top;
     reg clk = 0, btn_rst = 0, btn_u = 0, btn_l = 0, btn_r = 0, btn_c = 0;
@@ -17,6 +19,8 @@ module tb_cordic_fm_top;
     wire [7:0] led;
     wire adc_cs_n, adc_sclk, adc_sdata, dac_sync_n, dac_dina, dac_dinb, dac_sclk, vga_hs, vga_vs;
     wire amp_ain, amp_gain, amp_shutdown_n;
+    wire ac_mclk, ac_bclk, ac_lrclk, ac_sdata, ac_adr0, ac_adr1;
+    tri1 ac_scl, ac_sda;                            // board pull-ups
     wire [3:0] kypd_col, kypd_row, vga_r, vga_g, vga_b;
     reg  [15:0] pressed = 0;
 
@@ -26,8 +30,14 @@ module tb_cordic_fm_top;
         .dac_sync_n(dac_sync_n), .dac_dina(dac_dina), .dac_dinb(dac_dinb), .dac_sclk(dac_sclk),
         .kypd_col(kypd_col), .kypd_row(kypd_row),
         .amp_ain(amp_ain), .amp_gain(amp_gain), .amp_shutdown_n(amp_shutdown_n),
-        .vga_r(vga_r), .vga_g(vga_g), .vga_b(vga_b), .vga_hs(vga_hs), .vga_vs(vga_vs)
+        .vga_r(vga_r), .vga_g(vga_g), .vga_b(vga_b), .vga_hs(vga_hs), .vga_vs(vga_vs),
+        .ac_mclk(ac_mclk), .ac_bclk(ac_bclk), .ac_lrclk(ac_lrclk), .ac_sdata(ac_sdata),
+        .ac_adr0(ac_adr0), .ac_adr1(ac_adr1), .ac_scl(ac_scl), .ac_sda(ac_sda)
     );
+    integer mclk_edges = 0, bclk_edges = 0, lr_edges = 0;
+    always @(posedge ac_mclk)  mclk_edges = mclk_edges + 1;
+    always @(posedge ac_bclk)  bclk_edges = bclk_edges + 1;
+    always @(posedge ac_lrclk) lr_edges   = lr_edges + 1;
     wire [31:0] conv, perr;
     model_adcs7476 adc (.cs_n(adc_cs_n), .sclk(adc_sclk), .sdata(adc_sdata), .analog_code(12'd2500), .conversions(conv), .protocol_errors(perr));
     wire [11:0] da, db; wire [1:0] pa, pb; wire [31:0] ua, ub, ea, eb;
@@ -54,6 +64,8 @@ module tb_cordic_fm_top;
         check(dut.gain_recip != 0, "receiver gain calibrated");
         check(amp_edges > 1000 && amp_gain == 1'b1 && amp_shutdown_n == 1'b1, "AMP2: bit stream toggling, 6 dB, running");
         check(led[7] == 1'b1, "heartbeat LED on in the first half second");
+        check(mclk_edges > 7_900 && bclk_edges > 2500 && lr_edges >= 39, "codec: MCLK 10 MHz, BCLK and LRCLK running");
+        check(ac_adr0 === 1'b1 && ac_adr1 === 1'b1 && ac_scl === 1'b1 && ac_sda === 1'b1, "codec: address pins high, I2C idle before set-up");
         check(led[1:0] == 2'b00 && led[2] == 1'b0 && led[3] == 1'b0 && led[4] == 1'b0, "mode FM, source mic, not held, noise off");
         // switches: SW6 loud, SW7 mute
         sw[6] = 1; sw[7] = 1; repeat (10) @(negedge clk);
