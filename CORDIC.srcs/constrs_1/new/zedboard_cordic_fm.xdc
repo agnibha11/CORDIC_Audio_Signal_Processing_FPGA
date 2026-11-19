@@ -37,54 +37,41 @@ set_property -dict {PACKAGE_PIN W22 IOSTANDARD LVCMOS33} [get_ports {led[5]}]
 set_property -dict {PACKAGE_PIN U19 IOSTANDARD LVCMOS33} [get_ports {led[6]}]
 set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports {led[7]}]
 
-# ---------------- Pmod JA, bank 13 (3.3 V), top row: Pmod MIC ----------------
-# pin1 SS, pin2 NC, pin3 MISO, pin4 SCK
-set_property -dict {PACKAGE_PIN Y11  IOSTANDARD LVCMOS33} [get_ports adc_cs_n]    ;# JA1
-set_property -dict {PACKAGE_PIN Y10  IOSTANDARD LVCMOS33} [get_ports adc_miso]    ;# JA3
-set_property -dict {PACKAGE_PIN AA9  IOSTANDARD LVCMOS33} [get_ports adc_sclk]    ;# JA4
+# ---------------- Pmod JA, bank 13 (3.3 V), top row: Pmod AMP2 ----------------
+# pin1 AIN, pin2 GAIN, pin3 NC, pin4 ~SHUTDOWN
+set_property -dict {PACKAGE_PIN Y11  IOSTANDARD LVCMOS33 SLEW SLOW DRIVE 8} [get_ports amp_ain]   ;# JA1
+set_property -dict {PACKAGE_PIN AA11 IOSTANDARD LVCMOS33} [get_ports amp_gain]                    ;# JA2
+set_property -dict {PACKAGE_PIN AA9  IOSTANDARD LVCMOS33} [get_ports amp_shutdown_n]              ;# JA4
 
-# ---------------- Pmod JB, bank 13 (3.3 V): Pmod KYPD ----------------
-# pin1 COL4, pin2 COL3, pin3 COL2, pin4 COL1, pin7 ROW4, pin8 ROW3, pin9 ROW2, pin10 ROW1
-set_property -dict {PACKAGE_PIN W12 IOSTANDARD LVCMOS33} [get_ports {kypd_col[3]}] ;# JB1  COL4
-set_property -dict {PACKAGE_PIN W11 IOSTANDARD LVCMOS33} [get_ports {kypd_col[2]}] ;# JB2  COL3
-set_property -dict {PACKAGE_PIN V10 IOSTANDARD LVCMOS33} [get_ports {kypd_col[1]}] ;# JB3  COL2
-set_property -dict {PACKAGE_PIN W8  IOSTANDARD LVCMOS33} [get_ports {kypd_col[0]}] ;# JB4  COL1
-set_property -dict {PACKAGE_PIN V12 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[3]}] ;# JB7  ROW4
-set_property -dict {PACKAGE_PIN W10 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[2]}] ;# JB8  ROW3
-set_property -dict {PACKAGE_PIN V9  IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[1]}] ;# JB9  ROW2
-set_property -dict {PACKAGE_PIN V8  IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[0]}] ;# JB10 ROW1
+# ---------------- Pmod JB, bank 13 (3.3 V), top row: Pmod DA2 ----------------
+# pin1 ~SYNC, pin2 DINA, pin3 DINB, pin4 SCLK
+set_property -dict {PACKAGE_PIN W12 IOSTANDARD LVCMOS33} [get_ports dac_sync_n]   ;# JB1
+set_property -dict {PACKAGE_PIN W11 IOSTANDARD LVCMOS33} [get_ports dac_dina]     ;# JB2
+set_property -dict {PACKAGE_PIN V10 IOSTANDARD LVCMOS33} [get_ports dac_dinb]     ;# JB3
+set_property -dict {PACKAGE_PIN W8  IOSTANDARD LVCMOS33} [get_ports dac_sclk]     ;# JB4
 
-# ---------------- Pmod JC, bank 13 (3.3 V), top row: Pmod AMP2 ----------------
-# pin1 AIN, pin2 GAIN, pin3 NC, pin4 ~SHUTDOWN.
 # JC and JD are routed as differential pairs.  Header pin numbers (ZedBoard
 # schematic, sheet "PMODs and General I/O"):  pin 1 = Jx1_P, pin 2 = Jx1_N,
 # pin 3 = Jx2_P, pin 4 = Jx2_N, pin 7 = Jx3_P, pin 8 = Jx3_N, pin 9 = Jx4_P, pin 10 = Jx4_N.
-set_property -dict {PACKAGE_PIN AB7 IOSTANDARD LVCMOS33 SLEW SLOW DRIVE 8} [get_ports amp_ain]   ;# JC1  (JC1_P)
-set_property -dict {PACKAGE_PIN AB6 IOSTANDARD LVCMOS33} [get_ports amp_gain]                    ;# JC2  (JC1_N)
-set_property -dict {PACKAGE_PIN AA4 IOSTANDARD LVCMOS33} [get_ports amp_shutdown_n]              ;# JC4  (JC2_N)
+# (JE is wired to the processor's MIO pins and cannot be used by PL logic.)
 
-# ---------------- Pmod JD, bank 13 (3.3 V), top row: Pmod DA2 ----------------
-# pin1 ~SYNC, pin2 DINA, pin3 DINB, pin4 SCLK
-set_property -dict {PACKAGE_PIN V7  IOSTANDARD LVCMOS33} [get_ports dac_sync_n]   ;# JD1  (JD1_P)
-set_property -dict {PACKAGE_PIN W7  IOSTANDARD LVCMOS33} [get_ports dac_dina]     ;# JD2  (JD1_N)
-set_property -dict {PACKAGE_PIN V5  IOSTANDARD LVCMOS33} [get_ports dac_dinb]     ;# JD3  (JD2_P)
-set_property -dict {PACKAGE_PIN V4  IOSTANDARD LVCMOS33} [get_ports dac_sclk]     ;# JD4  (JD2_N)
+# ---------------- Pmod JC, bank 13 (3.3 V), top row: Pmod MIC ----------------
+# pin1 SS, pin2 NC, pin3 MISO, pin4 SCK
+set_property -dict {PACKAGE_PIN AB7 IOSTANDARD LVCMOS33} [get_ports adc_cs_n]     ;# JC1  (JC1_P)
+set_property -dict {PACKAGE_PIN Y4  IOSTANDARD LVCMOS33} [get_ports adc_miso]     ;# JC3  (JC2_P)
+set_property -dict {PACKAGE_PIN AA4 IOSTANDARD LVCMOS33} [get_ports adc_sclk]     ;# JC4  (JC2_N)
 
-# ---------------- VGA, bank 33 (3.3 V) ----------------
-set_property -dict {PACKAGE_PIN V20  IOSTANDARD LVCMOS33} [get_ports {vga_r[0]}]
-set_property -dict {PACKAGE_PIN U20  IOSTANDARD LVCMOS33} [get_ports {vga_r[1]}]
-set_property -dict {PACKAGE_PIN V19  IOSTANDARD LVCMOS33} [get_ports {vga_r[2]}]
-set_property -dict {PACKAGE_PIN V18  IOSTANDARD LVCMOS33} [get_ports {vga_r[3]}]
-set_property -dict {PACKAGE_PIN AB22 IOSTANDARD LVCMOS33} [get_ports {vga_g[0]}]
-set_property -dict {PACKAGE_PIN AA22 IOSTANDARD LVCMOS33} [get_ports {vga_g[1]}]
-set_property -dict {PACKAGE_PIN AB21 IOSTANDARD LVCMOS33} [get_ports {vga_g[2]}]
-set_property -dict {PACKAGE_PIN AA21 IOSTANDARD LVCMOS33} [get_ports {vga_g[3]}]
-set_property -dict {PACKAGE_PIN Y21  IOSTANDARD LVCMOS33} [get_ports {vga_b[0]}]
-set_property -dict {PACKAGE_PIN Y20  IOSTANDARD LVCMOS33} [get_ports {vga_b[1]}]
-set_property -dict {PACKAGE_PIN AB20 IOSTANDARD LVCMOS33} [get_ports {vga_b[2]}]
-set_property -dict {PACKAGE_PIN AB19 IOSTANDARD LVCMOS33} [get_ports {vga_b[3]}]
-set_property -dict {PACKAGE_PIN AA19 IOSTANDARD LVCMOS33} [get_ports vga_hs]
-set_property -dict {PACKAGE_PIN Y19  IOSTANDARD LVCMOS33} [get_ports vga_vs]
+# ---------------- Pmod JD, bank 13 (3.3 V): Pmod KYPD ----------------
+# pin1 COL4, pin2 COL3, pin3 COL2, pin4 COL1, pin7 ROW4, pin8 ROW3, pin9 ROW2, pin10 ROW1
+set_property -dict {PACKAGE_PIN V7 IOSTANDARD LVCMOS33} [get_ports {kypd_col[3]}] ;# JD1  COL4 (JD1_P)
+set_property -dict {PACKAGE_PIN W7 IOSTANDARD LVCMOS33} [get_ports {kypd_col[2]}] ;# JD2  COL3 (JD1_N)
+set_property -dict {PACKAGE_PIN V5 IOSTANDARD LVCMOS33} [get_ports {kypd_col[1]}] ;# JD3  COL2 (JD2_P)
+set_property -dict {PACKAGE_PIN V4 IOSTANDARD LVCMOS33} [get_ports {kypd_col[0]}] ;# JD4  COL1 (JD2_N)
+set_property -dict {PACKAGE_PIN W6 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[3]}] ;# JD7  ROW4 (JD3_P)
+set_property -dict {PACKAGE_PIN W5 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[2]}] ;# JD8  ROW3 (JD3_N)
+set_property -dict {PACKAGE_PIN U6 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[1]}] ;# JD9  ROW2 (JD4_P)
+set_property -dict {PACKAGE_PIN U5 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {kypd_row[0]}] ;# JD10 ROW1 (JD4_N)
+
 
 # ---------------- timing exceptions ----------------
 # Every input is resynchronised with two flops and every output is a slow

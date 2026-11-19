@@ -194,10 +194,10 @@ flowchart TD
 
 | Module | ZedBoard port | Purpose |
 |---|---|---|
-| Digilent Pmod MIC | JA, top row | Microphone and 12-bit ADC |
-| Digilent Pmod KYPD | JB | 16-key control panel |
-| Digilent Pmod AMP2 | JC, top row | Class-D amplifier for a loudspeaker |
-| Digilent Pmod DA2 | JD, top row | Two 12-bit DAC channels: channel signal and monitor |
+| Digilent Pmod AMP2 | JA, top row | Class-D amplifier for a loudspeaker |
+| Digilent Pmod DA2 | JB, top row | Two 12-bit DAC channels: channel signal and monitor |
+| Digilent Pmod MIC | JC, top row | Microphone and 12-bit ADC |
+| Digilent Pmod KYPD | JD | 16-key control panel |
 
 Also used: the on-board VGA connector, slide switches, push-buttons and LEDs. A loudspeaker
 (4 to 8 Ω, 3.5 mm plug) and a VGA monitor are required; an oscilloscope is optional.

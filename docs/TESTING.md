@@ -127,33 +127,37 @@ is right on silicon, because the model is bit-exact.
 
 5. Set `probe_out9 = 0`, `probe_out5 = 0`. Leave the override on for now.
 
-## Step 4. Pmod port pins with a multimeter (before plugging AMP2 and DA2)
+## Step 4. Pmod port pins with a multimeter (before plugging any Pmod)
 
 Purpose: confirm that the FPGA signals are on the header pins the wiring table says, in
-particular for ports JC and JD (see `WIRING.md` section 4). DC voltage range, black lead on pin 5
-(GND) of the same row. The signals toggle fast; a multimeter shows their average.
+particular on port JC, where a P/N swap would make the FPGA drive the microphone's output pin
+(see `WIRING.md` section 4). DC voltage range, black lead on pin 5 (GND) of the same row. The
+signals toggle fast; a multimeter shows their average.
 
 | Port pin | Signal | Expected reading | Then |
 |---|---|---|---|
 | any port, pin 6 | 3V3 | 3.3 V | |
-| JC2 | `amp_gain` | 3.3 V | SW6 up: 0 V |
-| JC4 | `amp_shutdown_n` | 3.3 V | SW7 up: 0 V |
-| JC1 | `amp_ain` | about 1.65 V (a 50 % bit stream) | steady |
-| JD1 | `dac_sync_n` | about 2.75 V (high except 3.3 of every 20 microseconds) | |
-| JD4 | `dac_sclk` | about 0.25 V | |
-| JD2, JD3 | `dac_dina`, `dac_dinb` | between 0 and about 0.3 V, varying | |
-| JA1 | `adc_cs_n` | about 2.75 V | |
-| JA4 | `adc_sclk` | about 3.0 V (idles high) | |
+| JA2 | `amp_gain` | 3.3 V | SW6 up: 0 V |
+| JA4 | `amp_shutdown_n` | 3.3 V | SW7 up: 0 V |
+| JA1 | `amp_ain` | about 1.65 V (a 50 % bit stream) | steady |
+| JB1 | `dac_sync_n` | about 2.75 V (high except 3.3 of every 20 microseconds) | |
+| JB4 | `dac_sclk` | about 0.25 V | |
+| JB2, JB3 | `dac_dina`, `dac_dinb` | between 0 and about 0.3 V, varying | |
+| JC1 | `adc_cs_n` | about 2.75 V | |
+| JC4 | `adc_sclk` | about 3.0 V (idles high) | |
+| JC2, JC3 | not used / `adc_miso` (input) | no defined reading | |
+| JD1 to JD4 | `kypd_col` | about 2.5 V each (low one quarter of the time) | |
+| JD7 to JD10 | `kypd_row` (inputs, pull-up) | about 3.3 V | |
 
-If JC2 does not follow SW6 but JC1 does, or JD1 reads low and JD2 reads 2.75 V, the P/N order of
-the pair is the other way round on your board: apply the fix in `WIRING.md` section 4, rebuild,
-repeat this step. Do not plug the AMP2 or DA2 in before this table is right.
+If JC2 reads 2.75 V instead of JC1, or JC3 reads 3.0 V instead of JC4, the P/N order of the pairs
+on JC is the other way round on your board: apply the fix in `WIRING.md` section 4, rebuild,
+repeat this step. **Do not plug the MIC in before JC1 and JC4 read as in the table.**
 
 Put SW6 and SW7 down again.
 
-## Step 5. Pmod DA2 on JD, oscilloscope
+## Step 5. Pmod DA2 on JB, oscilloscope
 
-Power off, plug the DA2 into the **top row of JD**, power on, program, repeat the VIO settings of
+Power off, plug the DA2 into the **top row of JB**, power on, program, repeat the VIO settings of
 step 3. Scope CH1 on DA2 J2 pin 1 (VOUTA), CH2 on J2 pin 3 (VOUTB), grounds on J2 pin 5.
 Both channels DC-coupled, 500 mV/div, 500 microseconds/div, trigger on CH2.
 
@@ -169,9 +173,9 @@ Both channels DC-coupled, 500 mV/div, 500 microseconds/div, trigger on CH2.
 A flat line at 1.65 V on both: the DAC is receiving frames of mid-scale, check the VIO source
 setting. 0 V or 3.3 V stuck: wiring or orientation.
 
-## Step 6. Pmod KYPD on JB
+## Step 6. Pmod KYPD on JD
 
-Power off, plug the keypad into JB (directly or with a 12-pin cable), power on, program.
+Power off, plug the keypad into JD (directly or with a 12-pin cable), power on, program.
 In the VIO set `probe_out0 = 0` (override off): the keypad is now in control.
 Put **SW3 up**: the LEDs now show the key code, LD7 lights while a key is held.
 
@@ -215,10 +219,10 @@ SW3 down. Press `0`. Then check each function key against the screen:
 | hold `1` | after half a second `FC` counts up continuously, stops at 10000 |
 | `0` | all defaults |
 
-## Step 7. Pmod AMP2 on JC, loudspeaker
+## Step 7. Pmod AMP2 on JA, loudspeaker
 
 Before plugging in: **SW7 up (mute), SW5 and SW4 up (quietest)**. Power off, plug the AMP2 into
-the top row of JC, loudspeaker into its jack, power on, program.
+the top row of JA, loudspeaker into its jack, power on, program.
 
 1. Press `7` (tone). SW7 down.
 
@@ -244,12 +248,12 @@ the top row of JC, loudspeaker into its jack, power on, program.
 | 5 | crackling, the tone is still recognisable |
 | 0 | noise |
 
-No sound at all: SW7; jack; step 4 readings on JC; speaker impedance (4 to 8 ohm, or powered
+No sound at all: SW7; jack; step 4 readings on JA; speaker impedance (4 to 8 ohm, or powered
 speakers). A loud hum or whistle that depends on where the speaker is: acoustic feedback, see step 8.
 
-## Step 8. Pmod MIC on JA
+## Step 8. Pmod MIC on JC
 
-SW7 up (mute) first. Power off, plug the MIC into the **top row of JA**, power on, program.
+SW7 up (mute) first. Power off, plug the MIC into the **top row of JC**, power on, program.
 Press `0` (source = microphone).
 
 | Check | Expected |
@@ -356,7 +360,7 @@ deterministic and bit-exact with the model, large deviations mean a real fault.
 | VIO core has the wrong number of probes after pulling new code | stale project: close it, delete the `vivado/` folder, `source create_project.tcl`, rebuild |
 | Picture rolls or monitor says "out of range" | the monitor does not accept 59.5 Hz at 640 x 480; try another monitor |
 | Everything works but the screen text is shifted by half a character | not a fault: the picture is delayed by half a pixel by design |
-| Top pane flat, `SRC = MIC` | step 8: ADC code; is the MIC in JA top row |
+| Top pane flat, `SRC = MIC` | step 8: ADC code; is the MIC in JC top row |
 | `SNR = 0` with the tone and a clean channel | receiver gain is 0: `probe_in18`; mode is bypass or beta is 0 |
 | SNR values consistently off by several dB | timing failure (step 1) is the first suspect |
 | Loudspeaker distorted | lower SW5/SW4 volume; SW6 down |

@@ -5,10 +5,10 @@
 //                     LEDs, VIO
 //
 //  One Pmod per port (two 6-pin Pmods cannot share a port mechanically):
-//  Pmod JA top row (1-4)     : Pmod MIC    -- SS, (nc), MISO, SCK
-//  Pmod JB (all 8)           : Pmod KYPD   -- COL4..COL1, ROW4..ROW1
-//  Pmod JC top row (1-4)     : Pmod AMP2   -- AIN, GAIN, (nc), ~SHUTDOWN
-//  Pmod JD top row (1-4)     : Pmod DA2    -- ~SYNC, DINA, DINB, SCLK
+//  Pmod JC top row (1-4)     : Pmod MIC    -- SS, (nc), MISO, SCK
+//  Pmod JD (all 8)           : Pmod KYPD   -- COL4..COL1, ROW4..ROW1
+//  Pmod JA top row (1-4)     : Pmod AMP2   -- AIN, GAIN, (nc), ~SHUTDOWN
+//  Pmod JB top row (1-4)     : Pmod DA2    -- ~SYNC, DINA, DINB, SCLK
 //  VGA                       : on-board connector (4-4-4 resistor DAC)
 //  BTND reset   BTNU mode   BTNL/BTNR carrier -/+   BTNC hold/run
 //  SW1:0 scope time base (x1, x2, x4)   SW2 overlay = error x16
@@ -35,19 +35,19 @@ module cordic_fm_top (
     input  wire       btn_c,
     input  wire [7:0] sw,
     output wire [7:0] led,
-    // Pmod JA top row: MIC (1,3,4)
+    // Pmod JC top row: MIC (1,3,4)
     output wire       adc_cs_n,
     input  wire       adc_miso,
     output wire       adc_sclk,
-    // Pmod JD top row: DA2 (1,2,3,4)
+    // Pmod JB top row: DA2 (1,2,3,4)
     output wire       dac_sync_n,
     output wire       dac_dina,
     output wire       dac_dinb,
     output wire       dac_sclk,
-    // Pmod JB: KYPD
+    // Pmod JD: KYPD
     output wire [3:0] kypd_col,
     input  wire [3:0] kypd_row,
-    // Pmod JC top row: AMP2
+    // Pmod JA top row: AMP2
     output wire       amp_ain,
     output wire       amp_gain,
     output wire       amp_shutdown_n,

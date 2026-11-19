@@ -20,7 +20,7 @@ Keep coming back to sentence 3. Everything in the demo is evidence for it.
 
 | Item | State |
 |---|---|
-| Pmods | MIC in JA (top row), KYPD in JB, AMP2 in JC (top row), DA2 in JD (top row) |
+| Pmods | AMP2 in JA (top row), DA2 in JB (top row), MIC in JC (top row), KYPD in JD |
 | Loudspeaker | in the AMP2 jack, facing the audience, at least 50 cm from the microphone, pointing away from it |
 | Monitor | VGA, visible to the audience |
 | Oscilloscope (optional) | CH1 on DA2 output A (channel), CH2 on output B (monitor), trigger CH2, 500 microseconds/div |

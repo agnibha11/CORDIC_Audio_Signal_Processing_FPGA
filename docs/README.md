@@ -619,14 +619,15 @@ in simulation).
 
 A **Pmod** is a small plug-in board with a 6-pin or 12-pin header: pins 1 to 4 (and 7 to 10) are
 signals, pin 5 (and 11) is ground, pin 6 (and 12) is 3.3 V. The ZedBoard has four Pmod ports
-wired to the FPGA (JA, JB, JC, JD), each with two rows of six pins: the top row is pins 1 to 6,
+wired to the FPGA (JA, JB, JC, JD; the fifth, JE, belongs to the processor and is not usable
+from FPGA logic), each with two rows of six pins: the top row is pins 1 to 6,
 the bottom row pins 7 to 12. A 6-pin Pmod uses one row; a 12-pin Pmod uses both. All four ports
 are on FPGA bank 13, which runs at 3.3 V.
 
 Two 6-pin Pmods cannot share one port (they would sit on top of each other), so each Pmod has
 its own port. Exact pins: [`WIRING.md`](WIRING.md).
 
-### 7.1 Pmod MIC (PB200-122 rev B) on JA
+### 7.1 Pmod MIC (PB200-122 rev B) on JC
 
 *What is on it* (reference manual in `Manuals/`): an electret condenser microphone, an SA575
 "compandor" used as a dynamic-range **compressor**, and a Texas Instruments **ADCS7476** 12-bit
@@ -653,7 +654,7 @@ SDATA ---<  0   0   0   0  D11 D10  D9 ...            D1  D0 >---
 The result is an unsigned number 0 to 4095 where about 2048 means "no sound". `mic_adc_spi` runs
 SCLK at 5 MHz, so a conversion takes 3.3 microseconds out of the 20 available.
 
-### 7.2 Pmod DA2 on JD
+### 7.2 Pmod DA2 on JB
 
 *What is on it:* two Texas Instruments **DAC121S101** 12-bit digital-to-analog converters. They
 share the SYNC and SCLK lines and have one data line each (DINA, DINB), so one 16-clock frame
@@ -674,7 +675,7 @@ the reading edge) and also runs at 5 MHz.
 B, pin 5 = ground. In this design **A is the channel signal** and **B is the monitor** (whatever
 the loudspeaker plays). A Q15 sample `s` becomes the DAC code `(s + 32768) >> 4`.
 
-### 7.3 Pmod AMP2 (PB200-233 rev B) on JC
+### 7.3 Pmod AMP2 (PB200-233 rev B) on JA
 
 *What is on it:* an Analog Devices **SSM2377** class-D audio power amplifier (up to 2.5 W into
 4 ohm from 5 V; less from 3.3 V), an RC low-pass filter in front of its input, and a 3.5 mm mono
@@ -707,7 +708,7 @@ sources; SW7 shuts the amplifier down. The amplifier is also held off during res
 audio, the loudspeaker's sound re-enters the microphone and the system can howl. Keep them apart,
 reduce the volume, or use the internal tone (key `7`).
 
-### 7.4 Pmod KYPD (PB200-195 rev B) on JB
+### 7.4 Pmod KYPD (PB200-195 rev B) on JD
 
 *What is on it:* sixteen push buttons at the crossings of four **column** wires and four **row**
 wires, and a pull-up resistor on every row. Nothing else: no chip.
