@@ -127,8 +127,8 @@ Every 20 µs (50 000 times a second) the chip runs the following sequence for on
    DA2 outputs the channel signal and the monitored signal for an external oscilloscope, and a
    triggered capture into block RAM feeds the VGA display.
 
-The CORDIC is busy for 57 of the 2000 clock cycles available per sample; the rest of the time
-the chip waits for the next sample.
+The CORDIC is busy for 57 of the 2000 clock cycles available per sample; for the rest of the
+time the chip waits for the next sample.
 
 ## Design notes
 
