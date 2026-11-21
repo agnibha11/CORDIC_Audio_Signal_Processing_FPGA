@@ -227,7 +227,7 @@ converters.
 
 ### Per-sample schedule
 
-Every 20 µs the DSP core runs one fixed sequence. The CORDIC engine is shared by the three jobs
+Every 20 µs, the DSP core runs one fixed sequence. The CORDIC engine is shared by the three jobs
 marked below; the noise generator and the converters run alongside.
 
 ```mermaid
