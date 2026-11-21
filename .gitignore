@@ -21,3 +21,6 @@ __pycache__/
 *.vvp
 vga_frame.ppm
 *.pb
+
+# original phone media (full resolution, with location metadata)
+Media/

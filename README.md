@@ -1,33 +1,98 @@
-# CORDIC Radio Link on a Chip
+<h1 align="center">CORDIC Radio Link on a Chip</h1>
 
-**Real-time FM / PM / AM modulation and demodulation of microphone audio through a
-programmable noisy channel, built around a single hand-written CORDIC engine.**
+<p align="center">
+<b>Real-time FM, PM and AM modulation and demodulation of live microphone audio through a
+programmable noisy channel, built around a single hand-written CORDIC engine on an FPGA.</b>
+</p>
+
+<p align="center">
+<img alt="FPGA" src="https://img.shields.io/badge/FPGA-Zynq--7000%20(ZedBoard)-0a7bbb">
+<img alt="HDL" src="https://img.shields.io/badge/HDL-Verilog--2001-5a4fcf">
+<img alt="Tools" src="https://img.shields.io/badge/tools-Vivado%202025.2-e76f00">
+<img alt="Clock" src="https://img.shields.io/badge/clock-100%20MHz-555">
+<img alt="Timing" src="https://img.shields.io/badge/timing-met-2ea44f">
+<img alt="Hardware" src="https://img.shields.io/badge/hardware-verified-2ea44f">
+</p>
+
+<p align="center">
+<img src="docs/media/setup.jpg" width="820" alt="The design running on a ZedBoard: VGA oscilloscope, Vivado hardware manager and the board with its Pmods">
+</p>
+
+<p align="center"><sub>The link running on the ZedBoard: live microphone audio, phase modulation,
+C/N = 30 dB. The monitor is the design's own VGA oscilloscope; the laptop runs the Vivado
+hardware manager.</sub></p>
 
 Avnet ZedBoard (Zynq-7000 `xc7z020clg484-1`, programmable logic only) · Verilog-2001 ·
-100 MHz single clock · 50 kS/s · Vivado
-
-Course project for Reconfigurable Computing, Problem Statement 1: *CORDIC-Based Audio Signal
-Processing System with User-Controlled Frequency Modulation* ([statement](Project%20Statement.pdf)).
-
-> **Project status.** The RTL is complete and verified in simulation against a bit-exact
-> reference model: twelve self-checking test benches pass in Vivado XSim and in Icarus
-> Verilog. The design has been synthesised and implemented in Vivado 2025.2 and a bitstream
-> generated; all timing constraints are met at 100 MHz
-> ([implementation results](#implementation)). The design **runs on the ZedBoard**: every
-> function was checked on hardware with the full bring-up procedure, and all checks passed. See
-> [Scope](#scope-what-was-done-and-what-was-not).
+100 MHz single clock · 50 kS/s · four Digilent Pmods · VGA
 
 ---
 
+**Contents:** [Overview](#overview) · [Demo](#demo) · [Highlights](#highlights) ·
+[How it works](#how-it-works) · [Reading the display](#reading-the-display) ·
+[Try it](#try-it-a-five-minute-tour) · [Results](#results) · [Architecture](#architecture) ·
+[Hardware](#hardware) · [Controls](#controls) · [Verification](#verification) ·
+[Implementation](#implementation) · [Limitations](#limitations) ·
+[Build and run](#build-and-run)
+
 ## Overview
 
-The assignment asks for a CORDIC-based FM modulator for microphone audio, with keypad control,
-storage in block RAM, DAC and VGA output, and an analysis of *the impact of modulation on audio
-quality*.
-
-A modulator alone cannot answer that last point: over a perfect link the audio comes back
+A modulator on its own says nothing about audio quality: over a perfect link the audio comes back
 unchanged whatever the modulation. This design therefore places the modulator inside a complete
-link on one FPGA:
+radio link on one FPGA. Speech from a microphone modulates a carrier, the carrier passes through
+a channel that adds a selectable amount of noise, and a receiver recovers the audio and plays it
+on a loudspeaker. A meter compares what came out with what went in and shows the
+signal-to-noise ratio on a VGA monitor.
+
+Everything is set live from a 16-key keypad: carrier frequency, modulation index, modulation type
+and channel noise. The classical results of analogue communication can then be heard and seen
+directly: FM outperforms AM at equal channel noise, gains 6 dB for each doubling of the
+modulation index, and fails abruptly below a threshold.
+
+## Demo
+
+<p align="center">
+<a href="docs/media/demo.mp4"><img src="docs/media/demo_poster.jpg" width="720" alt="Demonstration video: click to play"></a>
+<br><sub>Demonstration on the board (32 s, with sound): live voice through the link, the
+VGA oscilloscope and keypad control. Click the picture to play.</sub>
+</p>
+
+<p align="center">
+<img src="docs/media/scope.gif" width="560" alt="The VGA oscilloscope updating live">
+<br><sub>The on-chip oscilloscope updating in real time: original (green) and error x16 (red)
+in the upper pane, the noisy channel signal (cyan) below.</sub>
+</p>
+
+<table>
+<tr>
+<td width="50%"><img src="docs/media/board.jpg" alt="ZedBoard with Pmod AMP2, Pmod MIC and Pmod KYPD"></td>
+<td width="50%"><img src="docs/media/setup.jpg" alt="Complete bench set-up"></td>
+</tr>
+<tr>
+<td><sub><b>The board.</b> ZedBoard with the Pmod KYPD keypad, the Pmod MIC microphone (on
+jumper wires) and the Pmod AMP2 audio amplifier driving earphones; the VGA cable leaves at the
+top right.</sub></td>
+<td><sub><b>The bench.</b> The read-outs show FC = 4000 Hz, β = 5, PM, microphone source,
+C/N = 30 dB and the live output SNR; the VIO dashboard on the laptop reads the same values over
+JTAG.</sub></td>
+</tr>
+</table>
+
+## Highlights
+
+* **One CORDIC, three roles.** A single iterative engine (24-bit, 18 iterations) is time-shared
+  three times per sample: test-tone generation and carrier synthesis in rotation mode, and
+  phase/envelope detection in vectoring mode. It is active for 57 of the 2000 clocks in a
+  sample period. No vendor IP is used in the signal path.
+* **Programmable channel.** Additive Gaussian noise from a xorshift generator (sum of twelve
+  uniform values), 31 levels in 1 dB steps.
+* **Live measurement.** Output SNR is accumulated over 0.66 s windows and displayed; the error
+  signal can be overlaid on screen or listened to on its own.
+* **Model-driven verification.** A Python model defines the arithmetic bit for bit. The RTL is
+  checked against it sample by sample, and the same model produces every figure below.
+* **Self-contained instrument.** VGA oscilloscope with triggered capture, parameter read-outs
+  and SNR; two DAC channels for an external oscilloscope; block-RAM record readable over JTAG.
+
+## How it works
 
 ```mermaid
 flowchart LR
@@ -46,26 +111,63 @@ flowchart LR
     M --> VGA["VGA scope<br/>and read-outs"]
 ```
 
-The channel noise is generated on chip and set from the keypad. A meter compares the recovered
-audio with the original and displays the signal-to-noise ratio, and a loudspeaker makes the
-same comparison audible. The classical results of analogue communication can then be observed
-directly: FM outperforms AM at equal channel noise, gains 6 dB for each doubling of the
-modulation index, and fails abruptly below a threshold.
+Every 20 µs (50 000 times a second) the chip runs the following sequence for one audio sample:
 
-## Highlights
+1. **Capture.** The Pmod MIC delivers a 12-bit sample over SPI. A front end removes its DC offset
+   and scales it. Alternatively an internal test tone, generated by the CORDIC, replaces the
+   microphone.
+2. **Modulate.** The transmitter turns the audio into a carrier. In FM the audio sets the
+   carrier's instantaneous frequency, in PM its phase, in AM its amplitude. The CORDIC computes
+   the carrier's sine and cosine from a phase accumulator.
+3. **Add noise.** A xorshift random-number generator produces Gaussian noise, scaled to one of 31
+   carrier-to-noise ratios between 30 dB and 0 dB, and adds it to both carrier components.
+4. **Demodulate.** The same CORDIC, now in vectoring mode, converts the noisy carrier back into
+   amplitude and phase. AM uses the amplitude; PM the phase; FM the change in phase from one
+   sample to the next.
+5. **Filter and measure.** A low-pass filter removes out-of-band noise. The meter accumulates the
+   power of the original and of the difference between original and recovered audio, and turns
+   the ratio into an SNR in dB.
+6. **Output.** The recovered audio (or, on request, the original, the channel signal or the
+   error) goes to the Pmod AMP2 loudspeaker amplifier through a sigma-delta modulator. The Pmod
+   DA2 outputs the channel signal and the monitored signal for an external oscilloscope, and a
+   triggered capture into block RAM feeds the VGA display.
 
-* **One CORDIC, three roles.** A single iterative engine (24-bit, 18 iterations) is time-shared
-  three times per sample: test-tone generation and carrier synthesis in rotation mode, and
-  phase/envelope detection in vectoring mode. It is active for 57 of the 2000 clocks in a
-  sample period. No vendor IP is used in the signal path.
-* **Programmable channel.** Additive Gaussian noise from a xorshift generator (sum of twelve
-  uniform values), 31 levels in 1 dB steps.
-* **Live measurement.** Output SNR is accumulated over 0.66 s windows and displayed; the error
-  signal can be overlaid on screen or listened to on its own.
-* **Model-driven verification.** A Python model defines the arithmetic bit for bit. The RTL is
-  checked against it sample by sample, and the same model produces every figure below.
-* **Self-contained instrument.** VGA oscilloscope with triggered capture, parameter read-outs
-  and SNR; two DAC channels for an external oscilloscope; block-RAM record readable over JTAG.
+The CORDIC is busy for 57 of the 2000 clock cycles available per sample; the rest of the time
+the chip waits for the next sample.
+
+## Reading the display
+
+![Expected VGA display](docs/img/vga_expected.png)
+
+<sub>Display rendered from the same text ROM and layout as the RTL (FM, C/N = 15 dB).</sub>
+
+* **Upper pane.** The original audio in green, with the recovered audio in yellow drawn on top.
+  With switch SW2 up the yellow trace is replaced by the error (original minus recovered)
+  magnified 16 times, in red: the larger the red trace, the worse the link.
+* **Lower pane.** The channel signal in cyan: the modulated carrier with the channel noise added,
+  the same signal that the Pmod DA2 outputs on channel A.
+* **Read-outs.** Left: carrier frequency (FC), modulation index (BETA), test-tone frequency
+  (FM), modulating amplitude (AMP), frequency deviation (DEV) and the measured output SNR. Right:
+  modulation (MODE), source (SRC), channel C/N (CNR), hold, step size and the loudspeaker monitor
+  (MON). The keys that change each value are shown in brackets beside it.
+
+## Try it: a five-minute tour
+
+With the board programmed and all switches down:
+
+1. **Press `7`** to switch from the microphone to the internal 400 Hz tone. Both panes show clean
+   sine waves and the SNR read-out is near its maximum.
+2. **Press `9` a few times** to add channel noise. The cyan trace becomes ragged, the
+   loudspeaker hisses and the SNR falls. `E` removes noise again; `F` toggles between 1 dB and
+   5 dB steps.
+3. **Press `8`** to step through FM, PM, AM and bypass at the same noise level. AM is clearly the
+   noisiest: angle modulation trades bandwidth for noise immunity.
+4. **Press `2` or `5`** in FM to change the modulation index β. Each doubling of β improves the
+   SNR by about 6 dB.
+5. **Keep adding noise** below a C/N of about 10 dB in FM. The audio breaks up into clicks and
+   the SNR drops sharply: the FM threshold.
+6. **Press `D`** to choose what the loudspeaker plays (recovered, original, channel or error),
+   and **`7`** again to go back to the microphone and speak. **`0`** restores all defaults.
 
 ## Results
 
@@ -101,12 +203,6 @@ converters.
 ### Signals through the link
 
 ![Waveforms through the link](docs/img/link_waveforms.png)
-
-### Display
-
-Expected VGA output (rendered from the same text ROM and layout as the RTL), FM at C/N = 15 dB:
-
-![Expected VGA display](docs/img/vga_expected.png)
 
 ## Architecture
 
@@ -231,6 +327,8 @@ parameter can also be set and every internal measurement read over JTAG through 
 
 ## Verification
 
+### Simulation
+
 Twelve self-checking test benches cover every module and the complete system.
 
 | Bench | Scope | Checks |
@@ -251,6 +349,15 @@ Twelve self-checking test benches cover every module and the complete system.
 All twelve benches pass in Vivado XSim 2025.2 (`scripts/run_sims.tcl`) and in Icarus Verilog
 12, with identical results: the system bench reports the same SNR values to 0.01 dB in both. The design also elaborates without errors under `slang`
 (`scripts/lint_slang.py`).
+
+### On hardware
+
+The design was run on the ZedBoard with all four Pmods, a VGA monitor and earphones, and the full
+bring-up procedure was carried out: clock and reset, display, buttons, switches and LEDs; the
+complete link with the internal tone, including the on-screen SNR read-outs against the
+model's expected values; DAC outputs; all 16 keys and parameter limits; audio output with volume,
+gain and mute; the microphone path; FM, PM, AM and bypass with live voice; triggered capture and
+block-RAM read-back. Every check passed.
 
 ## Implementation
 
@@ -320,33 +427,7 @@ flip-flops placed in the I/O cells, giving matched output delays. The remaining 
 methodology warnings are advisory: optional DSP and block RAM pipelining registers, and
 structures inside the Xilinx debug hub.
 
-## Scope: what was done and what was not
-
-**Done**
-
-* Complete RTL for the link, user interface, display, storage and audio output.
-* Bit-exact Python reference model; generation of test vectors, ROM contents and all figures
-  from it.
-* Simulation of every module and of the full system; agreement of the simulated output SNR
-  with communication theory.
-* Synthesis, implementation and bitstream generation in Vivado 2025.2, with all timing
-  constraints met at 100 MHz.
-* Constraints, project and build scripts, wiring schematic, bring-up and demonstration
-  procedures.
-* Operation on the ZedBoard with all four Pmods, the VGA monitor and a loudspeaker. The full
-  bring-up procedure was carried out: clock and reset, display, buttons, switches
-  and LEDs; the complete link with the internal tone, including the on-screen SNR read-outs
-  against the model's expected values; DAC outputs; all 16 keys and parameter limits; audio
-  output with volume, gain and mute; the microphone path; FM, PM, AM and bypass with live
-  voice; triggered capture and block-RAM read-back. Every check passed.
-
-**Not done**
-
-* **Recorded bench measurements.** The hardware tests were pass/fail checks against the
-  expected values of the bring-up procedure; no measured values are published in this repository.
-  The figures under [Results](#results) are from the bit-exact model.
-
-**Design limits**
+## Limitations
 
 * The channel is modelled inside the FPGA. The DAC output is not received back through an ADC,
   so the analogue parts are outside the measured loop.
@@ -354,8 +435,10 @@ structures inside the Xilinx debug hub.
   carrier phase and carries over to a separate receiver; PM detection as implemented would
   additionally need carrier recovery.
 * There is no pre-detection band-pass filter; C/N is defined over the full 25 kHz Nyquist band.
+* The hardware tests were pass/fail checks against expected values; no bench measurements are
+  published. The figures under [Results](#results) are from the bit-exact model.
 
-## Build
+## Build and run
 
 Requirements: Vivado (ML Standard edition is sufficient) with the ZedBoard part installed.
 Clone to a path without spaces.
@@ -374,6 +457,17 @@ python3 scripts/analysis.py          # figures in docs/img/
 python3 scripts/gen_vectors.py       # test vectors for the benches
 ```
 
+### Programming the board
+
+1. Set jumper **J18 (VADJ) to 1V8**: the buttons and switches are constrained as 1.8 V inputs.
+   Set all slide switches down.
+2. Plug in the Pmods (power off): DA2 on JA, KYPD on JB, MIC on JC, AMP2 on JD, each 6-pin Pmod in
+   the top row. Connect a VGA monitor and earphones or a loudspeaker to the AMP2.
+3. Power on, open the Vivado Hardware Manager, connect to the board and program it with
+   `cordic_fm_top.bit`, adding `cordic_fm_top.ltx` as the probes file for the VIO dashboard.
+4. LD7 blinks once a second and the display shows the default read-outs. Keep the volume low at
+   first (SW4 and SW5 up), then follow the [tour](#try-it-a-five-minute-tour).
+
 ## Repository
 
 ```
@@ -381,17 +475,12 @@ CORDIC.srcs/sources_1/new/   RTL (22 modules)
 CORDIC.srcs/sim_1/new/       test benches, device models, test vectors
 CORDIC.srcs/constrs_1/new/   pin and timing constraints
 scripts/                     reference model, analysis, generators, Vivado scripts
-docs/                        figures and wiring schematic
+docs/img/                    figures generated from the model
+docs/media/                  photographs and demonstration video
+docs/wiring_schematic.png    connections between the ZedBoard and the Pmods
 Manuals/                     data sheets and reference manuals of the parts used
 create_project.tcl           rebuilds the Vivado project
 ```
-
-## Documentation
-
-| Document | Content |
-|---|---|
-| [`docs/wiring_schematic.png`](docs/wiring_schematic.png) | Connections between the ZedBoard and the Pmods |
-| [`Manuals/`](Manuals/README.md) | Reference manuals and data sheets |
 
 The developer handbook, the bring-up and test procedure and the demonstration script are kept
 in a separate repository for the project's contributors.
