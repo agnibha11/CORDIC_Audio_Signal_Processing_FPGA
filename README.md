@@ -467,7 +467,7 @@ source scripts/run_sims.tcl          ;# optional: all test benches
 source scripts/build_bitstream.tcl   ;# synthesis, implementation, reports/, bitstream
 ```
 
-Without Vivado, the model and the figures can be reproduced with Python 3 (NumPy, Matplotlib):
+Without Vivado, the model and all figures can be reproduced with Python 3 (NumPy, Matplotlib):
 
 ```sh
 python3 scripts/analysis.py          # figures in docs/img/
