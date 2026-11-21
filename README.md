@@ -144,7 +144,7 @@ f<sub>s</sub> = 50 kHz:
 | AM | amplitude (1 + μ · m[n]) / 2 on the carrier: the envelope follows the audio | envelope \|I + jQ\| minus the carrier level |
 | Bypass | the audio itself is sent through the channel | the received signal as it is |
 
-The bypass mode is the reference: it shows what the same channel noise does to audio sent with
+Bypass mode is the reference: it shows what the same channel noise does to audio sent with
 no modulation at all. The frequency deviation shown on screen is Δf = β · f<sub>m</sub>, so the
 defaults (β = 5, f<sub>m</sub> = 400 Hz) give 2 kHz.
 
