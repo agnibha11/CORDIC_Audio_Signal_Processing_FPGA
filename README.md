@@ -77,7 +77,7 @@ JTAG.</sub></td>
 * **One CORDIC, three roles.** A single iterative engine (24-bit, 18 iterations) is time-shared
   three times per sample: test-tone generation and carrier synthesis in rotation mode, and
   phase/envelope detection in vectoring mode. It is active for 57 of the 2000 clocks in a
-  sample period. No vendor IP is used in the signal path.
+  sample period. No vendor IP is used anywhere in the signal path.
 * **Programmable channel.** Additive Gaussian noise from a xorshift generator (sum of twelve
   uniform values), 31 levels in 1 dB steps.
 * **Live measurement.** Output SNR is accumulated over 0.66 s windows and displayed; the error
