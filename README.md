@@ -174,7 +174,7 @@ defaults (β = 5, f<sub>m</sub> = 400 Hz) give 2 kHz.
 
 ![Expected VGA display](docs/img/vga_expected.png)
 
-<sub>Display rendered from the same text ROM and layout as the RTL (FM, C/N = 15 dB).</sub>
+<sub>Display rendered from the same text ROM and screen layout as the RTL (FM, C/N = 15 dB).</sub>
 
 * **Upper pane.** The original audio in green, with the recovered audio in yellow drawn on top.
   With switch SW2 up the yellow trace is replaced by the error (original minus recovered)
