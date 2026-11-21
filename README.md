@@ -452,7 +452,7 @@ structures inside the Xilinx debug hub.
 * The receiver shares the transmitter's carrier reference. FM detection does not depend on the
   carrier phase and carries over to a separate receiver; PM detection as implemented would
   additionally need carrier recovery.
-* There is no pre-detection band-pass filter; C/N is defined over the full 25 kHz Nyquist band.
+* There is no pre-detection band-pass filter; C/N is therefore defined over the full 25 kHz Nyquist band.
 * The hardware tests were pass/fail checks against expected values; no bench measurements are
   published. The figures under [Results](#results) are from the bit-exact model.
 
