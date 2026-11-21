@@ -195,7 +195,7 @@ with zero mismatches.
 
 ![Output SNR versus C/N](docs/img/snr_vs_cnr.png)
 
-Markers: this design. Lines: small-noise theory for the implemented audio filter.
+Markers: this design. Lines: the small-noise theory for the implemented audio filter.
 
 | C/N | FM (2 kHz deviation) | PM (2 rad) | AM (100 %) | Unmodulated |
 |---|---|---|---|---|
