@@ -435,7 +435,7 @@ because the value is converted once per video frame.
 ### Power
 
 Vivado estimate with default switching activity (confidence: low): 0.221 W on chip, of which
-0.114 W dynamic and 0.108 W device static; junction temperature 27.6 °C.
+0.114 W dynamic and 0.108 W device static; estimated junction temperature 27.6 °C.
 
 ### Design checks
 
