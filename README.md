@@ -270,7 +270,7 @@ flowchart LR
     engine --> OUT["rotation: cos, sin<br/>vectoring: magnitude, angle"]
 ```
 
-Angles are binary fractions of a turn, so phase accumulators wrap naturally and the FM
+Angles are binary fractions of a turn, so the phase accumulators wrap naturally and the FM
 detector's phase difference needs no unwrapping.
 
 ### Module hierarchy
