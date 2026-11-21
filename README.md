@@ -395,8 +395,8 @@ Vivado 2025.2, `xc7z020clg484-1`, default synthesis and implementation strategie
 | Latches | 0 | 0 | 0 | | |
 
 "Design" comprises all logic except the debug cores, including the top-level power-on reset
-and input synchronisers. The VIO core serves bring-up only and may be omitted from a final
-build.
+and input synchronisers. The VIO core is used for bring-up only and can be omitted from a
+final build.
 
 Breakdown of the design (`u_sys`):
 
