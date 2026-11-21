@@ -317,7 +317,7 @@ Also used: the on-board VGA connector, slide switches, push-buttons and LEDs. A 
 
 ![Wiring](docs/wiring_schematic.png)
 
-Pin assignments are in [`zedboard_cordic_fm.xdc`](CORDIC.srcs/constrs_1/new/zedboard_cordic_fm.xdc).
+Pin assignments are listed in [`zedboard_cordic_fm.xdc`](CORDIC.srcs/constrs_1/new/zedboard_cordic_fm.xdc).
 
 ## Controls
 
