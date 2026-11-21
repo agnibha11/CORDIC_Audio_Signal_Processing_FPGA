@@ -56,12 +56,6 @@ https://github.com/user-attachments/assets/c8270283-23e9-471f-888e-a29b33476034
 link, the VGA oscilloscope and keypad control.
 <a href="docs/media/demo.mp4">Download the 720p video</a>.</sub></p>
 
-<p align="center">
-<img src="docs/media/scope.gif" width="560" alt="The VGA oscilloscope updating live">
-<br><sub>The on-chip oscilloscope updating in real time: original (green) and error x16 (red)
-in the upper pane, the noisy channel signal (cyan) below.</sub>
-</p>
-
 <table>
 <tr>
 <td width="50%"><img src="docs/media/board.jpg" alt="ZedBoard with Pmod AMP2, Pmod MIC and Pmod KYPD"></td>
@@ -481,9 +475,6 @@ docs/wiring_schematic.png    connections between the ZedBoard and the Pmods
 Manuals/                     data sheets and reference manuals of the parts used
 create_project.tcl           rebuilds the Vivado project
 ```
-
-The developer handbook, the bring-up and test procedure and the demonstration script are kept
-in a separate repository for the project's contributors.
 
 ## References
 
