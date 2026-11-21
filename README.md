@@ -478,7 +478,7 @@ python3 scripts/gen_vectors.py       # test vectors for the benches
 ### Programming the board
 
 1. Set jumper **J18 (VADJ) to 1V8**: the buttons and switches are constrained as 1.8 V inputs.
-   Set all slide switches down.
+   Start with all slide switches down.
 2. Plug in the Pmods (power off): DA2 on JA, KYPD on JB, MIC on JC, AMP2 on JD, each 6-pin Pmod in
    the top row. Connect a VGA monitor and earphones or a loudspeaker to the AMP2.
 3. Power on, open the Vivado Hardware Manager, connect to the board and program it with
