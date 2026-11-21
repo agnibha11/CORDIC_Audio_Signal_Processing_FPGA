@@ -28,8 +28,9 @@ Avnet ZedBoard (Zynq-7000 `xc7z020clg484-1`, programmable logic only) · Verilog
 ---
 
 **Contents:** [Overview](#overview) · [Demo](#demo) · [Highlights](#highlights) ·
-[How it works](#how-it-works) · [Reading the display](#reading-the-display) ·
-[Try it](#try-it-a-five-minute-tour) · [Results](#results) · [Architecture](#architecture) ·
+[How it works](#how-it-works) · [Design notes](#design-notes) ·
+[Reading the display](#reading-the-display) ·
+[Results](#results) · [Architecture](#architecture) ·
 [Hardware](#hardware) · [Controls](#controls) · [Verification](#verification) ·
 [Implementation](#implementation) · [Limitations](#limitations) ·
 [Build and run](#build-and-run)
@@ -129,6 +130,46 @@ Every 20 µs (50 000 times a second) the chip runs the following sequence for on
 The CORDIC is busy for 57 of the 2000 clock cycles available per sample; the rest of the time
 the chip waits for the next sample.
 
+## Design notes
+
+### The three modulations
+
+With m[n] the audio sample, the carrier phase advancing by a fixed step every sample, and
+f<sub>s</sub> = 50 kHz:
+
+| Mode | Transmitter | Receiver |
+|---|---|---|
+| FM | phase θ[n] = θ[n−1] + carrier step + k<sub>dev</sub> · m[n]: the frequency follows the audio | phase difference θ̂[n] − θ̂[n−1], minus the carrier step |
+| PM | phase θ[n] = carrier phase + k<sub>pm</sub> · m[n]: the phase follows the audio | θ̂[n] minus the carrier phase |
+| AM | amplitude (1 + μ · m[n]) / 2 on the carrier: the envelope follows the audio | envelope \|I + jQ\| minus the carrier level |
+| Bypass | the audio itself is sent through the channel | the received signal as it is |
+
+The bypass mode is the reference: it shows what the same channel noise does to audio sent with
+no modulation at all. The frequency deviation shown on screen is Δf = β · f<sub>m</sub>, so the
+defaults (β = 5, f<sub>m</sub> = 400 Hz) give 2 kHz.
+
+### Choices behind the implementation
+
+* **An iterative CORDIC, not a pipelined one.** A pipelined CORDIC would need 18 copies of the
+  shift-and-add stage to produce one result per clock. At 50 kS/s there are 2000 clocks per
+  sample, so a single stage reused for 18 iterations (19 clocks per result) does all three jobs
+  with time to spare, in 374 LUTs and no DSP slices.
+* **Angles as binary fractions of a turn.** A full circle is 2<sup>24</sup>, so phase
+  accumulators wrap around naturally and the FM detector's phase difference needs no unwrapping.
+* **Gaussian noise from uniform numbers.** Each noise value is the sum of twelve uniform values
+  from a xorshift generator, which is close to Gaussian by the central limit theorem; a table
+  scales it to the selected C/N.
+* **Constant output level.** The detector's output scale depends on the modulation index and
+  the mode. A divider computes the matching receiver gain only when a parameter changes, so the
+  recovered audio always has the original's amplitude and the two can be compared directly, on
+  screen and by the SNR meter.
+* **Identical filtering on both sides of the comparison.** The same low-pass filter runs on the
+  original and on the recovered audio, so both are band-limited and delayed identically and the
+  meter compares them sample by sample. The filter is four cascaded 4-sample averages, which need
+  no multipliers.
+* **Sigma-delta audio output.** The Pmod AMP2 takes an analogue input; a first-order
+  sigma-delta modulator on one pin, smoothed by the filter on the Pmod, replaces a DAC.
+
 ## Reading the display
 
 ![Expected VGA display](docs/img/vga_expected.png)
@@ -144,24 +185,6 @@ the chip waits for the next sample.
   (FM), modulating amplitude (AMP), frequency deviation (DEV) and the measured output SNR. Right:
   modulation (MODE), source (SRC), channel C/N (CNR), hold, step size and the loudspeaker monitor
   (MON). The keys that change each value are shown in brackets beside it.
-
-## Try it: a five-minute tour
-
-With the board programmed and all switches down:
-
-1. **Press `7`** to switch from the microphone to the internal 400 Hz tone. Both panes show clean
-   sine waves and the SNR read-out is near its maximum.
-2. **Press `9` a few times** to add channel noise. The cyan trace becomes ragged, the
-   loudspeaker hisses and the SNR falls. `E` removes noise again; `F` toggles between 1 dB and
-   5 dB steps.
-3. **Press `8`** to step through FM, PM, AM and bypass at the same noise level. AM is clearly the
-   noisiest: angle modulation trades bandwidth for noise immunity.
-4. **Press `2` or `5`** in FM to change the modulation index β. Each doubling of β improves the
-   SNR by about 6 dB.
-5. **Keep adding noise** below a C/N of about 10 dB in FM. The audio breaks up into clicks and
-   the SNR drops sharply: the FM threshold.
-6. **Press `D`** to choose what the loudspeaker plays (recovered, original, channel or error),
-   and **`7`** again to go back to the microphone and speak. **`0`** restores all defaults.
 
 ## Results
 
@@ -460,7 +483,8 @@ python3 scripts/gen_vectors.py       # test vectors for the benches
 3. Power on, open the Vivado Hardware Manager, connect to the board and program it with
    `cordic_fm_top.bit`, adding `cordic_fm_top.ltx` as the probes file for the VIO dashboard.
 4. LD7 blinks once a second and the display shows the default read-outs. Keep the volume low at
-   first (SW4 and SW5 up), then follow the [tour](#try-it-a-five-minute-tour).
+   first (SW4 and SW5 up). Press `7` for the internal test tone, `9` and `E` to add and remove
+   channel noise, and `8` to change the modulation.
 
 ## Repository
 
