@@ -188,7 +188,7 @@ defaults (β = 5, f<sub>m</sub> = 400 Hz) give 2 kHz.
 
 ## Results
 
-All results in this section are from the bit-exact model, which the RTL simulation matches
+All results in this section come from the bit-exact model, which the RTL simulation matches
 with zero mismatches.
 
 ### Output SNR against channel carrier-to-noise ratio
