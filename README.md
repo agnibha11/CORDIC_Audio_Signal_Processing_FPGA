@@ -14,8 +14,7 @@ Processing System with User-Controlled Frequency Modulation* ([statement](Projec
 > Verilog. The design has been synthesised and implemented in Vivado 2025.2 and a bitstream
 > generated; all timing constraints are met at 100 MHz
 > ([implementation results](#implementation)). The design **runs on the ZedBoard**: every
-> function was checked on hardware with the full bring-up procedure in
-> [`docs/TESTING.md`](docs/TESTING.md), and all checks passed. See
+> function was checked on hardware with the full bring-up procedure, and all checks passed. See
 > [Scope](#scope-what-was-done-and-what-was-not).
 
 ---
@@ -205,7 +204,7 @@ Also used: the on-board VGA connector, slide switches, push-buttons and LEDs. A 
 
 ![Wiring](docs/wiring_schematic.png)
 
-Pin-level tables are in [`docs/WIRING.md`](docs/WIRING.md).
+Pin assignments are in [`zedboard_cordic_fm.xdc`](CORDIC.srcs/constrs_1/new/zedboard_cordic_fm.xdc).
 
 ## Controls
 
@@ -332,10 +331,10 @@ structures inside the Xilinx debug hub.
   with communication theory.
 * Synthesis, implementation and bitstream generation in Vivado 2025.2, with all timing
   constraints met at 100 MHz.
-* Constraints, project and build scripts, wiring documentation, bring-up and demonstration
+* Constraints, project and build scripts, wiring schematic, bring-up and demonstration
   procedures.
 * Operation on the ZedBoard with all four Pmods, the VGA monitor and a loudspeaker. The full
-  procedure in `docs/TESTING.md` was carried out: clock and reset, display, buttons, switches
+  bring-up procedure was carried out: clock and reset, display, buttons, switches
   and LEDs; the complete link with the internal tone, including the on-screen SNR read-outs
   against the model's expected values; DAC outputs; all 16 keys and parameter limits; audio
   output with volume, gain and mute; the microphone path; FM, PM, AM and bypass with live
@@ -344,7 +343,7 @@ structures inside the Xilinx debug hub.
 **Not done**
 
 * **Recorded bench measurements.** The hardware tests were pass/fail checks against the
-  expected values in `docs/TESTING.md`; no measured values are published in this repository.
+  expected values of the bring-up procedure; no measured values are published in this repository.
   The figures under [Results](#results) are from the bit-exact model.
 
 **Design limits**
@@ -382,7 +381,7 @@ CORDIC.srcs/sources_1/new/   RTL (22 modules)
 CORDIC.srcs/sim_1/new/       test benches, device models, test vectors
 CORDIC.srcs/constrs_1/new/   pin and timing constraints
 scripts/                     reference model, analysis, generators, Vivado scripts
-docs/                        developer handbook, wiring, test and demonstration procedures
+docs/                        figures and wiring schematic
 Manuals/                     data sheets and reference manuals of the parts used
 create_project.tcl           rebuilds the Vivado project
 ```
@@ -391,11 +390,11 @@ create_project.tcl           rebuilds the Vivado project
 
 | Document | Content |
 |---|---|
-| [`docs/README.md`](docs/README.md) | Developer handbook: theory from first principles, the Pmods, every module, verification, results |
-| [`docs/WIRING.md`](docs/WIRING.md) | Connection schematic and pin tables |
-| [`docs/TESTING.md`](docs/TESTING.md) | Step-by-step bring-up and test procedure |
-| [`docs/DEMO.md`](docs/DEMO.md) | Demonstration script |
+| [`docs/wiring_schematic.png`](docs/wiring_schematic.png) | Connections between the ZedBoard and the Pmods |
 | [`Manuals/`](Manuals/README.md) | Reference manuals and data sheets |
+
+The developer handbook, the bring-up and test procedure and the demonstration script are kept
+in a separate repository for the project's contributors.
 
 ## References
 
