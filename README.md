@@ -458,7 +458,7 @@ structures inside the Xilinx debug hub.
 ## Build and run
 
 Requirements: Vivado (ML Standard edition is sufficient) with the ZedBoard part installed.
-Clone to a path without spaces.
+Clone the repository to a path without spaces.
 
 ```tcl
 # Vivado Tcl console, in the repository root
