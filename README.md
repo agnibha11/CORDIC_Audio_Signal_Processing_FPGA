@@ -13,8 +13,9 @@ Processing System with User-Controlled Frequency Modulation* ([statement](Projec
 > reference model: twelve self-checking test benches pass in Vivado XSim and in Icarus
 > Verilog. The design has been synthesised and implemented in Vivado 2025.2 and a bitstream
 > generated; all timing constraints are met at 100 MHz
-> ([implementation results](#implementation)). The design **has not yet been run on the
-> board**. The bring-up procedure is in [`docs/TESTING.md`](docs/TESTING.md). See
+> ([implementation results](#implementation)). The design **runs on the ZedBoard**: every
+> function was checked on hardware with the full bring-up procedure in
+> [`docs/TESTING.md`](docs/TESTING.md), and all checks passed. See
 > [Scope](#scope-what-was-done-and-what-was-not).
 
 ---
@@ -261,11 +262,11 @@ clock.
 
 | Resource | Design | Debug (VIO + hub) | Total | Available | Utilisation |
 |---|---|---|---|---|---|
-| Slice LUTs | 3 702 | 1 553 | 5 255 | 53 200 | 9.88 % |
-| Slice registers | 3 545 | 2 800 | 6 345 | 106 400 | 5.96 % |
+| Slice LUTs | 3 511 | 1 553 | 5 064 | 53 200 | 9.52 % |
+| Slice registers | 3 416 | 2 800 | 6 216 | 106 400 | 5.84 % |
 | DSP48E1 | 20 | 0 | 20 | 220 | 9.09 % |
 | Block RAM (RAMB36) | 3 | 0 | 3 | 140 | 2.14 % |
-| Bonded I/O | | | 62 | 200 | 31.0 % |
+| Bonded I/O | | | 54 | 200 | 27.0 % |
 | Global clock buffers | 1 | 1 | 2 | 32 | 6.25 % |
 | Latches | 0 | 0 | 0 | | |
 
@@ -273,20 +274,19 @@ clock.
 and input synchronisers. The VIO core serves bring-up only and may be omitted from a final
 build.
 
-Breakdown of the design (`u_sys`, plus the codec interface in the top level):
+Breakdown of the design (`u_sys`):
 
 | Block | LUTs | Registers | DSP48E1 | RAMB36 |
 |---|---|---|---|---|
-| `fm_dsp_core` (complete link) | 1 644 | 1 950 | 11 | |
+| `fm_dsp_core` (complete link) | 1 648 | 1 948 | 11 | |
 | &nbsp;&nbsp;of which `cordic_engine` | 374 | 81 | 0 | |
 | &nbsp;&nbsp;of which `awgn_gen` | 135 | 141 | 1 | |
-| &nbsp;&nbsp;of which `audio_lpf` (two instances) | 508 | 1 217 | 0 | |
+| &nbsp;&nbsp;of which `audio_lpf` (two instances) | 512 | 1 215 | 0 | |
 | `fidelity_meter` | 327 | 306 | 2 | |
-| `param_controller`, `recip_divider` | 389 | 242 | 6 | |
-| `vga_timing`, `vga_scope_render` | 598 | 341 | 1 | |
-| `capture_scope_ram` | 120 | 32 | | 3 |
-| `adau1761_out` (on-board codec: I2C set-up, I2S, MCLK; top level) | 180 | 127 | | |
-| Interfaces (keypad, front end, SPI masters, sigma-delta, debouncers) | 371 | 457 | | |
+| `param_controller`, `recip_divider` | 390 | 242 | 6 | |
+| `vga_timing`, `vga_scope_render` | 597 | 341 | 1 | |
+| `capture_scope_ram` | 119 | 32 | | 3 |
+| Interfaces (keypad, front end, SPI masters, sigma-delta, debouncers) | 372 | 457 | | |
 
 The CORDIC engine, which performs all trigonometric operations of both transmitter and
 receiver, occupies 374 LUTs (0.7 % of the device) and no DSP slices.
@@ -298,9 +298,9 @@ corner:
 
 | | Worst slack | Total negative slack | Failing endpoints | Total endpoints |
 |---|---|---|---|---|
-| Setup | +0.199 ns | 0.000 ns | 0 | 15 091 |
-| Hold | +0.042 ns | 0.000 ns | 0 | 15 075 |
-| Pulse width | +3.750 ns | 0.000 ns | 0 | 6 442 |
+| Setup | +0.193 ns | 0.000 ns | 0 | 14 766 |
+| Hold | +0.032 ns | 0.000 ns | 0 | 14 750 |
+| Pulse width | +3.750 ns | 0.000 ns | 0 | 6 313 |
 
 All user-specified timing constraints are met. The critical path lies in the receiver's audio
 filter (`audio_lpf`, accumulator to saturated output). The first implementation had shown a
@@ -310,8 +310,8 @@ because the value is converted once per video frame.
 
 ### Power
 
-Vivado estimate with default switching activity (confidence: low): 0.225 W on chip, of which
-0.117 W dynamic and 0.108 W device static; junction temperature 27.6 °C.
+Vivado estimate with default switching activity (confidence: low): 0.221 W on chip, of which
+0.114 W dynamic and 0.108 W device static; junction temperature 27.6 °C.
 
 ### Design checks
 
@@ -334,11 +334,18 @@ structures inside the Xilinx debug hub.
   constraints met at 100 MHz.
 * Constraints, project and build scripts, wiring documentation, bring-up and demonstration
   procedures.
+* Operation on the ZedBoard with all four Pmods, the VGA monitor and a loudspeaker. The full
+  procedure in `docs/TESTING.md` was carried out: clock and reset, display, buttons, switches
+  and LEDs; the complete link with the internal tone, including the on-screen SNR read-outs
+  against the model's expected values; DAC outputs; all 16 keys and parameter limits; audio
+  output with volume, gain and mute; the microphone path; FM, PM, AM and bypass with live
+  voice; triggered capture and block-RAM read-back. Every check passed.
 
 **Not done**
 
-* **Operation on the ZedBoard.** No measurement in this repository was taken on hardware.
-  Bench results will be added after the procedure in `docs/TESTING.md` has been carried out.
+* **Recorded bench measurements.** The hardware tests were pass/fail checks against the
+  expected values in `docs/TESTING.md`; no measured values are published in this repository.
+  The figures under [Results](#results) are from the bit-exact model.
 
 **Design limits**
 
