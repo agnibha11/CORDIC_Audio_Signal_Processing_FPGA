@@ -339,7 +339,7 @@ Pin assignments are listed in [`zedboard_cordic_fm.xdc`](CORDIC.srcs/constrs_1/n
 | Channel C/N | off, 30 to 0 dB in 1 dB steps | off |
 | Loudspeaker monitor | recovered, original, channel, error | recovered |
 
-Switches select the display time base, the error overlay, loudspeaker volume and mute. Every
+The switches select the display time base, the error overlay, loudspeaker volume and mute. Every
 parameter can also be set and every internal measurement read over JTAG through a VIO core.
 
 ## Verification
