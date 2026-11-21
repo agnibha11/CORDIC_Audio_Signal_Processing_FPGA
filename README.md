@@ -364,7 +364,8 @@ Twelve self-checking test benches cover every module and the complete system.
 | `tb_cordic_fm_system` | Full system through the device models: user interface, SNR against theory, capture, VGA timing | 859 |
 
 All twelve benches pass in Vivado XSim 2025.2 (`scripts/run_sims.tcl`) and in Icarus Verilog
-12, with identical results: the system bench reports the same SNR values to 0.01 dB in both. The design also elaborates without errors under `slang`
+12, with identical results: the system bench reports the same SNR values to 0.01 dB in both.
+The design also elaborates without errors under `slang`
 (`scripts/lint_slang.py`).
 
 ### On hardware
