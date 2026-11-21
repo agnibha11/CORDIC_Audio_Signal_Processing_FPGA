@@ -50,11 +50,11 @@ modulation index, and fails abruptly below a threshold.
 
 ## Demo
 
-<p align="center">
-<a href="docs/media/demo.mp4"><img src="docs/media/demo_poster.jpg" width="720" alt="Demonstration video: click to play"></a>
-<br><sub>Demonstration on the board (32 s, with sound): live voice through the link, the
-VGA oscilloscope and keypad control. Click the picture to play.</sub>
-</p>
+https://github.com/user-attachments/assets/c8270283-23e9-471f-888e-a29b33476034
+
+<p align="center"><sub>Demonstration on the board (32 s, with sound): live voice through the
+link, the VGA oscilloscope and keypad control.
+<a href="docs/media/demo.mp4">Download the 720p video</a>.</sub></p>
 
 <p align="center">
 <img src="docs/media/scope.gif" width="560" alt="The VGA oscilloscope updating live">
