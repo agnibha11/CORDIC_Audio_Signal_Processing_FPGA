@@ -412,8 +412,8 @@ Breakdown of the design (`u_sys`):
 | `capture_scope_ram` | 119 | 32 | | 3 |
 | Interfaces (keypad, front end, SPI masters, sigma-delta, debouncers) | 372 | 457 | | |
 
-The CORDIC engine, which performs all trigonometric operations of both transmitter and
-receiver, occupies 374 LUTs (0.7 % of the device) and no DSP slices.
+The CORDIC engine, which performs all trigonometric operations of both the transmitter and
+the receiver, occupies 374 LUTs (0.7 % of the device) and no DSP slices.
 
 ### Timing
 
