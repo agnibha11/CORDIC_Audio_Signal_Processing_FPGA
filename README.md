@@ -379,8 +379,8 @@ block-RAM read-back. Every check passed.
 
 ## Implementation
 
-Vivado 2025.2, `xc7z020clg484-1`, default synthesis and implementation strategies, one 100 MHz
-clock.
+Vivado 2025.2, `xc7z020clg484-1`, default synthesis and implementation strategies and a single
+100 MHz clock.
 
 ### Utilisation
 
