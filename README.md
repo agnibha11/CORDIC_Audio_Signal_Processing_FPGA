@@ -312,7 +312,7 @@ flowchart TD
 | Digilent Pmod MIC | JC, top row | Microphone and 12-bit ADC |
 | Digilent Pmod AMP2 | JD, top row | Class-D amplifier for a loudspeaker |
 
-Also used: the on-board VGA connector, slide switches, push-buttons and LEDs. A loudspeaker
+Also used: the on-board VGA connector, the slide switches, push-buttons and LEDs. A loudspeaker
 (4 to 8 Ω, 3.5 mm plug) and a VGA monitor are required; an oscilloscope is optional.
 
 ![Wiring](docs/wiring_schematic.png)
