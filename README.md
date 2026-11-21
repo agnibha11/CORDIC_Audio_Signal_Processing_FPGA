@@ -205,7 +205,7 @@ Markers: this design. Lines: the small-noise theory for the implemented audio fi
 | 10 dB | 17.8 dB | 25.1 dB | 7.7 dB | 19.4 dB |
 | 5 dB | 10.8 dB | 17.8 dB | 1.7 dB | 14.7 dB |
 
-Above the threshold the design follows theory within 0.3 dB. Below about 10 dB the angle
+Above the threshold, the design follows theory within 0.3 dB. Below about 10 dB the angle
 modulations depart from their lines: the FM threshold effect.
 
 ### FM exchanges bandwidth for SNR
