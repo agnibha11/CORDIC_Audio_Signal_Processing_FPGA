@@ -339,8 +339,77 @@ Pin assignments are listed in [`zedboard_cordic_fm.xdc`](CORDIC.srcs/constrs_1/n
 | Channel C/N | off, 30 to 0 dB in 1 dB steps | off |
 | Loudspeaker monitor | recovered, original, channel, error | recovered |
 
-The switches select the display time base, the error overlay, loudspeaker volume and mute. Every
-parameter can also be set and every internal measurement read over JTAG through a VIO core.
+The board buttons and switches, and the VIO dashboard over JTAG, are listed below. A printable
+copy is in [`docs/controls_and_vio.pdf`](docs/controls_and_vio.pdf).
+
+### Push-buttons
+
+| Button | Action |
+|---|---|
+| BTND | Reset: every parameter back to its default |
+| BTNU | Next modulation: FM → PM → AM → bypass (keypad `8`) |
+| BTNL | Carrier −100 Hz, or −1 kHz in coarse step mode (keypad `4`) |
+| BTNR | Carrier +100 Hz, or +1 kHz in coarse step mode (keypad `1`) |
+| BTNC | Hold / run: freeze the scope on the last record (keypad `C`) |
+
+BTNU, BTNL, BTNR and BTNC are debounced and act once per press; they are ignored while
+`vio_override` is 1.
+
+### Slide switches
+
+Switch up = 1.
+
+| Switch | Down | Up |
+|---|---|---|
+| SW1:SW0 | `00`: scope time base ×1 | `01`: ×2, `10` or `11`: ×4 |
+| SW2 | Yellow trace = recovered signal | Yellow trace = error (original − recovered) ×16 |
+| SW3 | LEDs show status (below) | LEDs show the keypad: LD3:0 last key code, LD7 key held |
+| SW4 | — | Loudspeaker −6 dB |
+| SW5 | — | Loudspeaker −12 dB (with SW4: −18 dB) |
+| SW6 | AMP2 gain 6 dB | AMP2 gain 12 dB |
+| SW7 | Loudspeaker on | Loudspeaker muted |
+
+Status LEDs (SW3 down): LD1:0 mode, LD2 tone source, LD3 hold, LD4 channel noise on, LD5 clip,
+LD6 key activity, LD7 1 Hz heartbeat. SW4 to SW7 affect only the loudspeaker, not the Pmod DA2
+outputs.
+
+### VIO dashboard
+
+Load `cordic_fm_top.ltx` as the probes file in the Hardware Manager so the probes show these names.
+
+**Outputs (set from the laptop)**
+
+| Signal | Probe | Bits | Meaning |
+|---|---|---|---|
+| `vio_override` | out0 | 1 | 1 = the VIO values below drive every parameter; keypad and buttons ignored except `D` |
+| `vio_fc_idx` | out1 | 7 | Carrier f<sub>c</sub> = n × 100 Hz, 1 to 100 (starts at 40) |
+| `vio_beta_q` | out2 | 7 | Modulation index β = n / 8, 0 to 127 (starts at 40) |
+| `vio_fm_idx` | out3 | 6 | Test tone f<sub>m</sub> = n × 50 Hz, 1 to 40 (starts at 8) |
+| `vio_amp` | out4 | 6 | Modulating amplitude A = n / 16, 0 to 63 (starts at 16) |
+| `vio_mode` | out5 | 2 | 0 FM, 1 PM, 2 AM, 3 bypass |
+| `vio_source` | out6 | 1 | 0 microphone, 1 internal tone |
+| `vio_hold` | out7 | 1 | 1 freezes the scope |
+| `vio_rd_addr` | out8 | 11 | Capture RAM read address: bit 10 bank, bits 9:0 sample 0 to 1023 |
+| `vio_noise` | out9 | 5 | Channel noise: 0 off, else C/N = 31 − n dB |
+
+**Inputs (read on the laptop)**
+
+| Signal | Probe | Bits | Meaning |
+|---|---|---|---|
+| `fc_idx`, `beta_q`, `fm_idx`, `amp`, `mode`, `source`, `noise_idx` | in0 to in6 | | Live parameters, same scaling as the outputs |
+| `key_code` | in7 | 4 | Last keypad key accepted |
+| `adc_code` | in8 | 12 | Raw microphone ADC code (silence ≈ 2048) |
+| `m_sample` | in9 | 16 | Original audio, Q15 |
+| `r_sample` | in10 | 16 | Channel signal (modulated + noise), Q15 |
+| `mhat_sample` | in11 | 16 | Recovered audio, Q15 |
+| `sum_sig` | in12 | 48 | Σ m² over the last 32 768 samples (0.66 s) |
+| `sum_err` | in13 | 48 | Σ (m − m̂)² over the same window; SNR = 10 log<sub>10</sub>(`sum_sig` / `sum_err`) |
+| `peak_err` | in14 | 16 | Largest \|m − m̂\| in the window |
+| `snr_db` | in15 | 7 | On-chip SNR estimate in dB (the VGA value) |
+| `vio_rd_data` | in16 | 48 | Captured sample at `vio_rd_addr`: bits 47:32 m, 31:16 r, 15:0 m̂ |
+| `status` | in17 | 8 | bit 7 clip, 6 recording, 5 coarse step, 4 hold, 3 display bank, 2 mute (SW7), 1:0 monitor select |
+| `gain_recip` | in18 | 32 | Receiver gain ⌊2<sup>39</sup> / `div_den`⌋ |
+| `div_den` | in19 | 26 | Gain divisor chosen by mode (0 in bypass) |
 
 ## Verification
 
