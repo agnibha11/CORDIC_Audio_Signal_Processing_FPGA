@@ -2,7 +2,7 @@
 `default_nettype none
 // ============================================================================
 //  Project Name : CORDIC Radio Link on a Chip
-//  Authors      : Hridayesh Kundu
+//  Authors      : Hridayesh Kundu, Agnibha Sarkar
 //  Last Updated : 24 November 2026
 // ============================================================================
 module tb_fm_dsp_core;
