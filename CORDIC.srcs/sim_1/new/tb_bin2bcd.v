@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_bin2bcd.v -- serial binary-to-BCD converter: every 8-bit value and 2000
-//  random 20-bit values against the simulator's own / and % operators;
-//  conversion time = W clocks.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_bin2bcd;
     reg clk = 0, rst = 1, st8 = 0, st20 = 0;

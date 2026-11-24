@@ -1,10 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_mic_adc_spi.v -- ADC master against the behavioural ADCS7476 model
-//  Checks: every 12-bit code is received exactly, the model sees exactly 16
-//  SCLK periods per frame, no protocol violations, SCLK idles high, CS low
-//  time = 33 half periods (3.3 us), and a restart while busy is ignored.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_mic_adc_spi;
     localparam integer SCLK_DIV = 20;

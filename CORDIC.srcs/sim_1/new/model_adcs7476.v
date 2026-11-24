@@ -1,16 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  model_adcs7476.v -- behavioural model of the Pmod MIC ADC for simulation
-//
-//  Reproduces the datasheet serial behaviour (ADCS7476, section 7.3):
-//   * the analog input is sampled at the falling edge of CS
-//   * SDATA leaves tri-state t3 after CS falls and presents the first
-//     leading zero; every FALLING SCLK edge launches the next bit after
-//     t_DACC (four leading zeros, then DB11..DB0)
-//   * after the 16th falling edge SDATA goes to tri-state (modelled as 'z')
-//   * a protocol monitor flags CS rising early and more than 16 clocks.
-//  `analog_code` is the 12-bit code the test bench wants "sampled".
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module model_adcs7476 (
     input  wire        cs_n,

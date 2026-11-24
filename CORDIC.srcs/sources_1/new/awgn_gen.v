@@ -1,30 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  awgn_gen.v -- channel noise source: two independent Gaussian samples per
-//                audio sample (one for each quadrature of the carrier)
-//
-//  A real radio link adds noise between transmitter and receiver.  This block
-//  is that noise, generated on chip so the link can be degraded on purpose
-//  and the receiver's behaviour measured.
-//
-//  1. Uniform numbers: a 32-bit xorshift generator (Marsaglia), three XOR
-//     shifts per step, period 2^32 - 1.  The upper 16 bits of each state are
-//     used as a signed uniform number.
-//  2. Gaussian shape: the sum of 12 independent uniform numbers is very close
-//     to a normal distribution (central limit theorem, "Irwin-Hall").  A
-//     signed 16-bit uniform number has variance 2^32 / 12, so the sum of 12
-//     has variance 2^32 exactly: sigma = 2^16.
-//  3. Level: the sum is multiplied by a gain g and shifted right by 16, so the
-//     output has sigma = g.  The gain table holds
-//         g = (32767 / sqrt 2) / 10^(CNR/20),   CNR = 31 - noise_idx  dB
-//     i.e. noise_idx 1 -> 30 dB carrier-to-noise ratio ... 31 -> 0 dB, and
-//     noise_idx 0 switches the noise off.  CNR is the power of a full-scale
-//     carrier (32767^2 / 2) over the variance of ONE quadrature component.
-//
-//  Sequence per `start`: 12 clocks sum I, 12 clocks sum Q, 3 clocks scale
-//  (28 clocks from `start` to `done`).
-//  Bit-exact with scripts/cordic_model.py (class Awgn).
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Hridayesh Kundu
+//  Last Updated : 24 November 2026
 // ============================================================================
 module awgn_gen (
     input  wire               clk,

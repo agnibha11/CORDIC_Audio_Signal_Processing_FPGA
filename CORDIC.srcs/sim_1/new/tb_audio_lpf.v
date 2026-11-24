@@ -1,14 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_audio_lpf.v -- audio low-pass filter (four cascaded 4-sample averages)
-//  Reference: direct convolution with the 13-tap impulse response
-//  (1,1,1,1)*(1,1,1,1)*(1,1,1,1)*(1,1,1,1), computed here by convolution --
-//  a different algorithm from the recursive moving sums of the DUT.
-//   1. impulse response equals the 13 taps (sum 256, symmetric -> linear phase)
-//   2. 3000 random samples incl. full-scale 20-bit values: bit-exact, saturation
-//   3. DC gain exactly 1; a sine at 12.5 kHz (the first null) is removed
-//   4. latency 5 clocks
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Hridayesh Kundu
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_audio_lpf;
     reg clk = 0, rst = 1, en = 0;

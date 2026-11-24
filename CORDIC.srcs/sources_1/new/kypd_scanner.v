@@ -1,26 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  kypd_scanner.v -- Pmod KYPD 4x4 matrix keypad scanner with debounce and
-//                    auto-repeat
-//
-//  Electrical (Pmod KYPD reference manual): rows have on-board pull-ups; the
-//  host drives ONE column low at a time and reads the rows -- a low row
-//  means the key at (row, column) is pressed.
-//
-//  Physical layout (COL1 is the left column, ROW1 the top row):
-//        COL1 COL2 COL3 COL4
-//  ROW1   1    2    3    A
-//  ROW2   4    5    6    B
-//  ROW3   7    8    9    C
-//  ROW4   0    F    E    D
-//
-//  Scan: each column is driven for SCAN_CLKS clocks (82 us) and the rows are
-//  sampled at the end of that window, so a full 4-column scan takes 328 us.
-//  A key image must be identical for DEBOUNCE_SCANS consecutive scans before
-//  it is accepted (5.2 ms).  A single new key produces one `key_valid` pulse;
-//  holding it for REPEAT_DELAY scans (~0.5 s) produces repeats every
-//  REPEAT_RATE scans (~0.1 s).  Chords (two keys) are ignored.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module kypd_scanner #(
     parameter integer SCAN_CLKS      = 8192,

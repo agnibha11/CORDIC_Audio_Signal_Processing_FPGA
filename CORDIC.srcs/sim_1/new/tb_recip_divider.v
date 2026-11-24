@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_recip_divider.v -- restoring divider against the simulator's "/"
-//  (a different algorithm: the DUT is bit-serial restoring division, the
-//  reference is 64-bit integer division).  Also checks latency and den = 0.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Hridayesh Kundu
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_recip_divider;
     localparam integer NS = 39, DW = 26, QW = 32;

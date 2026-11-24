@@ -1,24 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  capture_scope_ram.v -- triggered, double-buffered capture of the original,
-//                         channel (modulated + noise) and recovered signals
-//                         in block RAM
-//
-//  Storage: 2 banks x 1024 samples x 48 bits ({m, r, m_hat}, Q15 each) in
-//  true-dual-port BRAM (3 x RAMB36).  The capture FSM writes one bank while
-//  the VGA scope reads the other; the banks swap at the next vertical
-//  blanking after a record completes, so the display never tears.
-//
-//  Trigger: rising zero-crossing of the ORIGINAL signal with hysteresis
-//  (armed below -1024, fires at >= 0) -- the scope image stands still for
-//  periodic signals.  If nothing crosses for AUTO_TRIG samples the capture
-//  free-runs (silence / DC still shows something).  `hold` freezes the
-//  last complete record.
-//
-//  Port A is shared: the capture writes on it (once per 2000 clocks) and the
-//  VIO dashboard reads any address through it the rest of the time, so the
-//  stored samples can also be read back numerically.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module capture_scope_ram #(
     parameter integer AUTO_TRIG = 32768

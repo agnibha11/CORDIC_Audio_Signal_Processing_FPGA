@@ -1,18 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  audio_frontend.v -- ADC code -> signed Q15 audio with DC removal
-//
-//  The Pmod MIC delivers unsigned 12-bit codes biased near mid-scale (2048).
-//  1. offset binary -> two's complement, scaled to Q15 (<< 4)
-//  2. first-order DC blocker  y[n] = x[n] - x[n-1] + (1 - 2^-8) y[n-1]
-//     implemented with 8 fractional guard bits (acc is Q15.8):
-//        acc <= acc - (acc >>> 8) + ((x - x_prev) << 8)
-//     corner frequency  fc = Fs * 2^-8 / (2 pi) ~ 31 Hz at Fs = 50 kHz,
-//     so the microphone bias (and any ADC offset) never reaches the
-//     modulator, where a DC term would become a constant carrier offset.
-//  3. clip flag: raw code within 64 LSB of either rail.
-//  Latency: 1 clock after `in_valid`.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module audio_frontend (
     input  wire               clk,

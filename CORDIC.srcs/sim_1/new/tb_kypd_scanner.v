@@ -1,11 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_kypd_scanner.v -- keypad scanner against the matrix model
-//  Scaled-down timing (SCAN_CLKS = 64, 4 scans debounce, repeat 40/10 scans).
-//  Checks: every key decodes to its cap value, a bounce shorter than the
-//  debounce window is rejected, auto-repeat timing, chords are ignored,
-//  release clears key_down.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_kypd_scanner;
     localparam integer SCAN = 64, DEB = 4, RPT_D = 40, RPT_R = 10;

@@ -1,10 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  btn_debounce.v -- counter debouncer for a push button (input already
-//  synchronised).  `level` follows the input once it has been stable for
-//  STABLE_CLKS clocks (10 ms at 100 MHz); `press` is a one-cycle pulse on
-//  the debounced rising edge.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module btn_debounce #(
     parameter integer STABLE_CLKS = 1_000_000

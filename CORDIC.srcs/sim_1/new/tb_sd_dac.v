@@ -1,12 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_sd_dac.v -- sigma-delta DAC for the Pmod AMP2
-//   1. for constant inputs the number of ones in 65536 output bits equals the
-//      input as an unsigned 16-bit number (+/- 1): density = (s + 32768)/65536
-//   2. bit period = DIV clocks
-//   3. a 1 kHz sine is tracked: the bit stream averaged over 2 ms windows
-//      follows the sine within 1 % of full scale
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_sd_dac;
     localparam integer DIV = 16;

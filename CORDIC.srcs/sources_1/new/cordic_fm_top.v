@@ -1,30 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  cordic_fm_top.v -- ZedBoard wrapper: pins, power-on reset, synchronisers,
-//                     LEDs, VIO
-//
-//  One Pmod per port (two 6-pin Pmods cannot share a port mechanically):
-//  Pmod JC top row (1-4)     : Pmod MIC    -- SS, (nc), MISO, SCK
-//  Pmod JB (all 8)           : Pmod KYPD   -- COL4..COL1, ROW4..ROW1
-//  Pmod JD top row (1-4)     : Pmod AMP2   -- AIN, GAIN, (nc), ~SHUTDOWN
-//  Pmod JA top row (1-4)     : Pmod DA2    -- ~SYNC, DINA, DINB, SCLK
-//  VGA                       : on-board connector (4-4-4 resistor DAC)
-//  BTND reset   BTNU mode   BTNL/BTNR carrier -/+   BTNC hold/run
-//  SW1:0 scope time base (x1, x2, x4)   SW2 overlay = error x16
-//  SW3 LEDs show key code   SW5:4 loudspeaker volume (0 / -6 / -12 / -18 dB)
-//  SW6 loudspeaker amplifier +6 dB   SW7 loudspeaker mute
-//  LEDs: LD0-1 mode  LD2 source(tone)  LD3 hold  LD4 channel noise on
-//        LD5 clip    LD6 key activity  LD7 1 Hz heartbeat
-//
-//  Reset: the FPGA configures every flip-flop to 0, which is NOT the reset
-//  state of the design (parameter defaults, the noise generator's seed).  A
-//  16-clock power-on reset is therefore generated here from a register whose
-//  configuration value is all ones, and ORed with the BTND button.
-//
-//  The VIO core (vio_0) is only instantiated when USE_VIO is defined, which
-//  create_project.tcl does for the synthesis file set, so the same top level
-//  simulates without any IP.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Agnibha Sarkar
+//  Last Updated : 24 November 2026
 // ============================================================================
 module cordic_fm_top (
     input  wire       clk100,

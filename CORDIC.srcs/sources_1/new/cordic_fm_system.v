@@ -1,22 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  cordic_fm_system.v -- board-independent integration of the whole design:
-//                        a complete radio link on one chip
-//
-//   Pmod MIC -> mic_adc_spi -> audio_frontend -> +------------- fm_dsp_core --------------+
-//                                                | TX (CORDIC) -> channel -> RX (CORDIC)  |
-//   Pmod KYPD -> kypd_scanner -> param_controller| rotation      + noise     vectoring    |
-//                                + recip_divider +----------------------------------------+
-//                                                   |            |             |
-//                                              m (reference)  r (channel)   m_hat (recovered)
-//                                                   |            |             |
-//             capture_scope_ram  <------------------+------------+-------------+--> fidelity_meter (SNR)
-//                     |                                          |             |
-//             vga_timing + vga_scope_render -> VGA          DAC-A (DA2)   monitor mux -> DAC-B (DA2)
-//                                                                                    -> sd_dac -> Pmod AMP2
-//
-//  One sample period = CLK_PER_SAMPLE clocks (2000 = 50 kS/s).
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Agnibha Sarkar
+//  Last Updated : 24 November 2026
 // ============================================================================
 module cordic_fm_system #(
     parameter integer CLK_PER_SAMPLE = 2000,

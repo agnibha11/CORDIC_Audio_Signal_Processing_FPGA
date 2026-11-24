@@ -1,14 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_cordic_fm_top.v -- smoke test of the board wrapper (pins, power-on
-//  reset, synchronisers, LEDs, AMP2 pins).
-//  The reset button is NEVER pressed: the design must come up in its reset
-//  state from the power-on reset alone, exactly as after FPGA configuration.
-//  Runs 40 samples: the ADC model must see conversions, the DAC models
-//  updates, the AMP2 pin must toggle, LED7 heartbeat / mode LEDs / key-code
-//  LED mode must behave (full-speed keypad timing: one press costs ~12 ms of
-//  simulated time), BTNU and the switches must act.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Agnibha Sarkar
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_cordic_fm_top;
     reg clk = 0, btn_rst = 0, btn_u = 0, btn_l = 0, btn_r = 0, btn_c = 0;

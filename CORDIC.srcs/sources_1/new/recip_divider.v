@@ -1,16 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  recip_divider.v -- sequential restoring divider:  quot = floor(2^NUM_SHIFT / den)
-//
-//  The demodulator recovers a phase / frequency / envelope deviation whose
-//  scale depends on the modulation index.  Multiplying that deviation by this
-//  reciprocal restores the original audio amplitude for ANY parameter
-//  setting, so "original" and "demodulated" can be compared directly on the
-//  VGA scope and by the fidelity meter.  A division is only needed when a
-//  parameter changes (microseconds, not per sample), so a 1-bit-per-clock
-//  restoring divider is the right size: NUM_SHIFT+2 clocks per result.
-//  den = 0 yields quot = 0 (demodulator muted).
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Hridayesh Kundu
+//  Last Updated : 24 November 2026
 // ============================================================================
 module recip_divider #(
     parameter integer NUM_SHIFT = 39,   // numerator = 2^NUM_SHIFT

@@ -1,31 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  cordic_engine.v -- iterative (folded) CORDIC, rotation AND vectoring mode
-//
-//  One micro-rotation per clock, N clocks per result.  The same hardware
-//  computes:
-//     rotation  : (x,y) rotated by angle z     -> sin/cos, i.e. the FM carrier
-//     vectoring : (x,y) rotated onto the x-axis -> atan2(y,x) and K*|(x,y)|,
-//                 i.e. the FM/PM phase detector and the AM envelope detector
-//
-//  Angles are "binary angle measurement": a Z-bit two's-complement word where
-//  2^Z = one full turn.  Because the whole circle is covered, the input angle
-//  is first reduced to +/- quarter turn by a 90-degree pre-rotation (which is
-//  just a swap and a negate), then the classic +/-99.9 degree CORDIC range
-//  is sufficient.
-//
-//  Rotation mode  : d_i = sign(z_i)      z -> 0,   (x,y) -> K*(x cos z - y sin z, x sin z + y cos z)
-//  Vectoring mode : d_i = -sign(y_i)     y -> 0,   x -> K*sqrt(x^2+y^2),  z -> z0 + atan2(y,x)
-//      x_{i+1} = x_i - d_i * (y_i >>> i)
-//      y_{i+1} = y_i + d_i * (x_i >>> i)
-//      z_{i+1} = z_i - d_i * atan(2^-i)
-//  K = prod sqrt(1 + 2^-2i) = 1.6467602581 for N >= 16.  The caller
-//  pre-scales the rotation start vector by 1/K so no multiplier is needed.
-//
-//  Latency : N + 1 clocks from `start` to `done`.
-//  Widths  : W data bits (callers use Q15 << 4 with headroom for the K growth),
-//            Z angle bits.  atan table is exact for Z <= 26.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Agnibha Sarkar
+//  Last Updated : 24 November 2026
 // ============================================================================
 module cordic_engine #(
     parameter integer W = 24,      // data path width

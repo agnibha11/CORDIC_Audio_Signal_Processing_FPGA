@@ -1,22 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  da2_dac_spi.v -- SPI master for the Pmod DA2 (two TI DAC121S101, 12-bit)
-//
-//  The two DACs share SYNC and SCLK and have separate data inputs DINA/DINB,
-//  so both channels are updated with ONE 16-clock frame.
-//
-//  Frame (DAC121S101 datasheet 8.5.2):  X X PD1 PD0 D11 ... D0, MSB first.
-//  PD1:PD0 = 00 selects normal operation.
-//    * DIN is latched on FALLING edges of SCLK while SYNC is low.
-//    * The DAC register updates on the 16th falling edge.
-//    * SYNC must be high >= t_SYNC (20 ns) before the next frame.
-//  To respect the DAC's setup/hold (a few ns) with margin, DIN changes only
-//  on RISING edges of SCLK, i.e. half a period (100 ns) away from the
-//  latching edge.  SCLK idles low here (either polarity is legal).
-//
-//  Timing at SCLK_DIV = 20: 33 half-periods = 3.3 us per update.
-//  f_SCLK max = 30 MHz.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module da2_dac_spi #(
     parameter integer SCLK_DIV = 20

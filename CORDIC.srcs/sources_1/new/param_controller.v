@@ -1,39 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  param_controller.v -- user parameters, keypad command decode and the
-//                        derived DSP constants
-//
-//  User-facing parameters (what the keypad edits and the VGA shows):
-//     fc_idx    : carrier frequency      f_c  = fc_idx * 100 Hz        1..100
-//     beta_q    : modulation index       beta = beta_q / 8  (Q4.3)     0..127
-//     fm_idx    : modulating frequency   f_m  = fm_idx * 50 Hz         1..40
-//     amp       : modulating amplitude   A    = amp / 16   (Q2.4)      0..63
-//     noise_idx : channel noise          0 = off, else C/N = 31 - noise_idx dB
-//     mode      : 0 FM, 1 PM, 2 AM, 3 bypass          source: 0 MIC, 1 tone
-//     mon_sel   : what the loudspeaker and DAC-B play
-//                 0 recovered audio, 1 original, 2 channel signal, 3 error
-//
-//  Derived constants (all exact integer arithmetic, Fs = 50 kHz):
-//     fcw_c = fc_idx * round(100 * 2^32 / Fs)       carrier phase increment
-//     fcw_m = fm_idx * round( 50 * 2^32 / Fs)       tone phase increment
-//     kdev  = beta * fcw_m                          FM: peak deviation Df = beta * f_m
-//     kpm   = min(beta, 2) * 2^32 / (2 pi)          PM: peak phase deviation, limited to 2 rad
-//     mu_q  = min(beta, 1)  (Q15)                   AM: modulation depth, limited to 100 %
-//     div_den: divisor for the receiver's reciprocal gain, selected by mode
-//  The PM and AM limits keep the memoryless phase / envelope detectors inside
-//  their valid range (|phase| < pi, envelope > 0) for every keypad setting.
-//
-//  Keypad map (see kypd_scanner.v for the physical layout):
-//     1/4 fc +/-   2/5 beta +/-   3/6 fm +/-    A/B amp +/-
-//     7 source     8 mode         9/E noise +/- C hold/run
-//     0 defaults   F coarse step  D monitor select
-//  Board buttons duplicate the most-used actions: BTNL/BTNR fc -/+,
-//  BTNU mode, BTNC hold/run.  With vio_override = 1 the VIO dashboard
-//  drives every parameter directly (bench use without a keypad).
-//
-//  The derived constants are computed in three registered steps so that no
-//  path contains two multipliers in series.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Hridayesh Kundu
+//  Last Updated : 24 November 2026
 // ============================================================================
 module param_controller (
     input  wire        clk,

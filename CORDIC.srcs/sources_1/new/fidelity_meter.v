@@ -1,19 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  fidelity_meter.v -- quantifies "what modulation did to the audio"
-//
-//  Over a window of 2^WLOG samples it accumulates
-//        sum_sig = sum m[n]^2            (original modulating signal)
-//        sum_err = sum (m[n] - m_hat[n])^2   (original minus demodulated)
-//  and the peak |error|.  SNR(dB) = 10 log10(sum_sig / sum_err) is shown on
-//  the VGA using a leading-one log2 estimator (+/- 0.5 dB); the exact sums
-//  are exported to the VIO for an offline calculation.
-//  m is the modulating signal and m_hat the receiver output, both after the
-//  same audio filter, so the difference is exactly what the link (modulator,
-//  noisy channel, demodulator) did to the audio.  With the channel noise off
-//  the result is the CORDIC's own noise floor; with it on, the meter traces
-//  the textbook SNR-versus-C/N curves of FM, PM and AM.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Hridayesh Kundu
+//  Last Updated : 24 November 2026
 // ============================================================================
 module fidelity_meter #(
     parameter integer WLOG = 15            // 32768 samples = 0.66 s at 50 kS/s

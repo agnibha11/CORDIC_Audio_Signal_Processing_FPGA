@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_da2_dac_spi.v -- dual DAC master against two DAC121S101 models
-//  Checks: both channels receive their 12-bit codes in one 16-clock frame,
-//  PD bits = 00, DIN setup margin, SYNC framing, idle levels, frame time.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_da2_dac_spi;
     localparam integer SCLK_DIV = 20;

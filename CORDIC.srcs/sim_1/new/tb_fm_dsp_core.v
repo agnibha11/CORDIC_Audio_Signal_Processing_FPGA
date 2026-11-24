@@ -1,19 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_fm_dsp_core.v -- the complete radio link, BIT-EXACT against the Python
-//                      reference model
-//
-//  dsp_vectors.mem holds 2900 consecutive audio samples in ten parameter
-//  segments (FM / PM / AM / bypass, tone and microphone source, channel noise
-//  from off to C/N = 0 dB, extreme settings).  For every sample the five
-//  outputs of the link -- reference audio, channel signal, recovered audio,
-//  transmitted signal, tone -- must equal the model's to the last bit.
-//  The DUT is the real parameter path: param_controller (driven through its
-//  VIO override) -> recip_divider -> fm_dsp_core, wired as in
-//  cordic_fm_system.  Since the analysis figures are computed with the same
-//  model, this bench is what ties the published curves to the hardware.
-//  Also measured: clocks per sample of the DSP sequence.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Hridayesh Kundu
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_fm_dsp_core;
     localparam integer NV = 2900;

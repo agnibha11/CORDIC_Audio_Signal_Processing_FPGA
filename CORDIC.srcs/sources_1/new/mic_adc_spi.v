@@ -1,24 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  mic_adc_spi.v -- SPI master for the Pmod MIC (TI ADCS7476, 12-bit SAR)
-//
-//  Protocol (ADCS7476 datasheet, section 7.3 and Pmod MIC reference manual):
-//    * SCLK idles HIGH.  A conversion starts on the falling edge of CS; the
-//      analog input is sampled at that instant (track -> hold).
-//    * The ADC shifts SDATA out on FALLING edges of SCLK: four leading zeros
-//      followed by DB11..DB0.  "The sample bits ... are intended to be clocked
-//      in by a receiver on subsequent falling edges", i.e. each bit is captured
-//      one SCLK period after it was launched.  The LSB is valid on the 16th
-//      falling edge, after which SDATA goes tri-state.
-//    * After 16 SCLK periods CS returns high; t_QUIET (50 ns) must elapse
-//      before the next conversion -- trivially satisfied at 50 kS/s.
-//
-//  Timing at SCLK_DIV = 20 (5 MHz SCLK from 100 MHz): 33 half-periods =
-//  3.3 us per conversion.  f_SCLK max is 20 MHz; the ADC's data access time
-//  (t_DACC <= 40 ns at 3 V) comfortably fits one 200 ns period.
-//
-//  `data` is the raw unsigned 12-bit code (0..4095, mid-scale ~ 2048).
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module mic_adc_spi #(
     parameter integer SCLK_DIV = 20          // clk cycles per SCLK period (even)

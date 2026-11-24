@@ -1,14 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  model_dac121s101.v -- behavioural model of one DAC121S101 (Pmod DA2 channel)
-//
-//  Shifts DIN in on every FALLING SCLK edge while SYNC is low.  On the 16th
-//  falling edge the frame is decoded: the DAC register takes D11..D0 if
-//  PD1:PD0 = 00, otherwise the power-down mode is recorded.  Setup/hold of
-//  DIN around the latching edge are checked against the datasheet limits
-//  (tDS = 4.5 ns, tDHD = 4.5 ns worst case) and counted as protocol errors,
-//  as are frames shorter than 16 clocks.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module model_dac121s101 (
     input  wire        sync_n,

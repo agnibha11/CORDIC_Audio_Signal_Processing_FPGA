@@ -1,41 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  fm_dsp_core.v -- one complete radio link per audio sample, built around
-//                   ONE time-shared CORDIC engine
-//
-//      modulating signal m --> TRANSMITTER --> CHANNEL --> RECEIVER --> m_hat
-//                              (CORDIC,        (+ noise)   (CORDIC,
-//                               rotation)                   vectoring)
-//
-//  At 50 kS/s there are 2000 clocks per sample and an 18-iteration CORDIC
-//  needs 19, so one folded engine is used three times per sample:
-//
-//    job 1  rotation   sin(phi_m)             -> internal test tone
-//    job 2  rotation   cos/sin(theta)         -> carrier I/Q  (the transmitter)
-//    job 3  vectoring  atan2(Q,I), |I+jQ|     -> phase / envelope detector
-//                                                (the receiver)
-//
-//  Transmitter (m = modulating signal, Q15):
-//    FM     theta[n] = theta[n-1] + fcw_c + kdev*m[n]     frequency follows m
-//    PM     theta[n] = phi_c[n]   + kpm*m[n]              phase follows m
-//    AM     tx       = cos(phi_c[n]) * (1 + mu*m[n]) / 2  amplitude follows m
-//    BYPASS tx       = m[n]                               base-band reference
-//  Channel: independent Gaussian noise is added to both quadratures
-//    rx_i = tx_i + n_i ,  rx_q = tx_q + n_q                (awgn_gen)
-//  Receiver (vectoring CORDIC on the NOISY I/Q):
-//    FM     raw = theta_hat[n] - theta_hat[n-1] - fcw_c
-//    PM     raw = theta_hat[n] - phi_c[n]
-//    AM     raw = |rx| - carrier level
-//    m_hat_raw = raw * gain_recip   (gain_recip = 2^39 / D from recip_divider)
-//  Audio filter: the SAME low-pass filter runs on m (the reference) and on
-//  m_hat_raw (the receiver output), so that both are band-limited and delayed
-//  identically and can be compared sample by sample.
-//
-//  Every multiplication is registered on both sides and at most 25 x 18 bits,
-//  i.e. one DSP48E1 with a full clock period; wide products are assembled
-//  from two partial products in the following state.
-//  Bit-exact with scripts/cordic_model.py (class FMCore).
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Hridayesh Kundu
+//  Last Updated : 24 November 2026
 // ============================================================================
 module fm_dsp_core #(
     parameter integer W = 24,

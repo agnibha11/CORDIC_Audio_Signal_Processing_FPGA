@@ -1,15 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_cordic_engine.v -- self-checking test of the iterative CORDIC engine
-//
-//  T1  rotation over the full circle (4096 angles) against double-precision
-//      $cos/$sin: |error| <= 2 LSB of the Q15 result
-//  T2  bit-exact comparison with the Python reference model (cordic_vectors.mem)
-//  T3  vectoring of 2000 random vectors against $atan2 / $hypot
-//  T4  handshake: latency is exactly N+1 clocks, start while busy is ignored,
-//      back-to-back jobs
-//  Run with "run all"; the last line is "ALL PASS (n checks)".
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Agnibha Sarkar
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_cordic_engine;
     localparam integer W = 24, Z = 24, N = 18;

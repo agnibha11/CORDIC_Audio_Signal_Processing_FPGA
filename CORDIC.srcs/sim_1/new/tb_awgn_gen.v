@@ -1,14 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_awgn_gen.v -- channel noise source
-//   1. bit-exact against the Python model (awgn_vectors.mem, 448 sample pairs
-//      at seven noise levels, generator state carried across levels)
-//   2. latency 28 clocks, `start` while busy ignored
-//   3. statistics over 20000 samples at C/N = 0 dB: mean ~ 0, sigma within
-//      2 % of the table value (23170), I and Q uncorrelated, no sample beyond
-//      6 sigma, about 68.3 % of the samples n_in one sigma
-//   4. noise_idx = 0 gives exactly zero
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Hridayesh Kundu
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_awgn_gen;
     reg clk = 0, rst = 1, start = 0;

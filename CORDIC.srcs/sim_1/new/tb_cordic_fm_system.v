@@ -1,32 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  tb_cordic_fm_system.v -- end-to-end test of the complete system
-//
-//  The system is driven through its real interfaces: a behavioural ADCS7476
-//  (Pmod MIC) fed with a 300 Hz sine, two DAC121S101 models on the DA2 pins,
-//  the keypad matrix model on the KYPD pins, the AMP2 bit stream.  Keypad
-//  timing is scaled down (parameters) so a key press costs ~80 us.
-//
-//  T1  defaults, reciprocal divider calibrated after reset
-//  T2  BYPASS, clean channel: channel signal = DC-blocked input / 2 (vs a
-//      double-precision DC blocker); reference = 13-tap FIR of that input
-//      (the audio filter, by direct convolution); recovered == reference;
-//      DAC-A / DAC-B codes; AMP2 bit-stream density and control pins
-//  T3  FM, clean channel: transmitted s[n] vs a double-precision FM model
-//      driven by the RTL's own m[n] (+/- 8 LSB), recovered vs reference
-//      (SNR > 60 dB), hardware fidelity meter
-//  T4  PM and AM through the keypad ('8'), same checks (index limits 2 rad / 100 %)
-//  T5  keypad edits: all sixteen keys, clamping, coarse step, defaults
-//  T6  NOISY CHANNEL: C/N = 15 dB selected on the keypad; the measured
-//      output SNR of FM and of the base-band reference must equal the
-//      small-noise theory (+/- 1.5 dB) and FM must beat AM by > 6 dB
-//  T7  capture RAM: the 1024 samples read back through the VIO port equal
-//      the bench's log from the trigger instant; trigger is a rising
-//      zero crossing
-//  T8  VGA timing (800 x 525, sync widths) and a frame dump to vga_frame.ppm
-//  Simulated time ~0.5 s: about 15 minutes in Icarus / XSim. "run all";
-//  the last line is "ALL PASS (n checks)".
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Agnibha Sarkar
+//  Last Updated : 24 November 2026
 // ============================================================================
 module tb_cordic_fm_system;
     localparam real PI = 3.14159265358979323846;

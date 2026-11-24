@@ -1,14 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  bin2bcd.v -- binary to decimal digits, one bit per clock ("double dabble")
-//
-//  The VGA read-outs need decimal digits.  Shift the binary number left into
-//  a row of 4-bit digits; before each shift add 3 to every digit that is 5 or
-//  more, so that the doubling carries into the next digit at 10 instead of 16.
-//  After W shifts the digits hold the decimal value.  The numbers on screen
-//  change at human speed, so a slow serial converter (W clocks) is free and
-//  keeps long combinational adders out of the pixel path.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module bin2bcd #(
     parameter integer W = 8,                // input bits

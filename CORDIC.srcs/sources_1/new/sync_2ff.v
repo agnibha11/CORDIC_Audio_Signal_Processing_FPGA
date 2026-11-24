@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  sync_2ff.v -- two-flop synchroniser for asynchronous board inputs
-//  (switches, buttons, keypad rows, ADC data line).  ASYNC_REG keeps the two
-//  flops adjacent so the metastability settling time is maximised.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Agnibha Sarkar
+//  Last Updated : 24 November 2026
 // ============================================================================
 module sync_2ff #(
     parameter integer WIDTH = 1,

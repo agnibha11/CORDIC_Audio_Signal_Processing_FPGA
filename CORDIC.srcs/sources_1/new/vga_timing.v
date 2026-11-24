@@ -1,14 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  vga_timing.v -- 640x480 @ 60 Hz (VESA 25.175 MHz class) timing generator
-//
-//  Rather than a second clock domain, the whole design runs on the 100 MHz
-//  board clock and the pixel rate is a clock ENABLE every 4th cycle
-//  (25.0 MHz, 59.5 Hz frame rate -- within every monitor's lock range).
-//  Horizontal: 640 visible, 16 front porch, 96 sync, 48 back porch = 800
-//  Vertical  : 480 visible, 10 front porch,  2 sync, 33 back porch = 525
-//  Both sync pulses are active low.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module vga_timing (
     input  wire       clk,

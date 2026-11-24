@@ -1,25 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  audio_lpf.v -- audio-band low-pass filter: four cascaded 4-sample moving
-//                 averages (a "sinc^4" filter), no multipliers
-//
-//  Why it exists: the receiver's raw output still contains noise over the
-//  whole 0..25 kHz band, but speech only needs about 3 kHz.  Everything above
-//  the audio band is thrown away here -- this is where FM earns its noise
-//  advantage, because an FM discriminator puts most of its noise at high
-//  frequencies.
-//
-//  One stage:  y[n] = x[n] + x[n-1] + x[n-2] + x[n-3]
-//  computed recursively as  acc += x[n] - x[n-4]  (exact in integers).
-//  Four stages give a gain of 4^4 = 256, removed at the end by a rounding
-//  shift of 8.  Response: -3 dB at 2.93 kHz, nulls at 12.5 and 25 kHz, first
-//  side lobe -45 dB.  Linear phase: every frequency is delayed by exactly
-//  6 samples, so the reference path can use an identical filter and stay
-//  aligned sample for sample.
-//
-//  One stage is evaluated per clock (5 clocks per sample) to keep the adder
-//  chain short.  Bit-exact with scripts/cordic_model.py (class BoxLPF).
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Hridayesh Kundu
+//  Last Updated : 24 November 2026
 // ============================================================================
 module audio_lpf #(
     parameter integer IN_W = 20             // input width (signed)

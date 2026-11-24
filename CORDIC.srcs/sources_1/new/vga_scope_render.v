@@ -1,34 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 // ============================================================================
-//  vga_scope_render.v -- two-channel oscilloscope display with a text overlay
-//
-//  640 x 480 layout (16 px text rows):
-//    row 0      title, key currently held
-//    row 1      legend for trace A
-//    rows 2-11  TRACE A : original m[n] (green) with the recovered m_hat[n]
-//               (yellow) or the error (m - m_hat) x16 (red) drawn on top
-//    row 12     legend for trace B, time base, REC / MUTE flags
-//    rows 13-22 TRACE B : channel signal r[n] = modulated carrier + noise (cyan)
-//    rows 24-29 live parameter read-outs and key hints
-//  Each trace is +/-64 px for full scale (value >>> 9).  Consecutive samples
-//  are joined by vertical segments so a 10 kHz carrier still reads as a
-//  waveform.
-//
-//  Timing structure.  One pixel lasts four 100 MHz clocks (pix_en marks the
-//  first).  The work for a pixel is spread over those clocks so that no
-//  register-to-register path is longer than one small step:
-//     pix_en        : issue the capture-RAM address of the NEXT pixel
-//     pix_en + 2    : RAM data is there -> convert the three samples to
-//                     screen heights (y_m, y_o, y_s)
-//     next pix_en   : STAGE 1  compare heights with v -> trace hits;
-//                              look up the character code of this cell
-//     + 1 clock     : STAGE 2  font ROM -> text pixel
-//     + 2 clocks    : STAGE 3  colour priority -> RGB, HS, VS pins
-//  RGB and the sync pulses leave together, 2 clocks (half a pixel) after the
-//  counters, so the picture is simply shifted by half a pixel.
-//  The decimal digits of the read-outs are produced by serial bin2bcd
-//  converters once per frame, during vertical blanking.
+//  Project Name : CORDIC Radio Link on a Chip
+//  Authors      : Ayush Shinde
+//  Last Updated : 24 November 2026
 // ============================================================================
 module vga_scope_render (
     input  wire        clk,
