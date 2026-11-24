@@ -22,13 +22,6 @@ module da2_dac_spi #(
     output reg         dac_sclk               // DA2 pin 4 (SCLK)
 );
 
-    // SCLK is held in two registers.  The port register dac_sclk drives only the pin, so
-    // it is packed into the I/O cell (IOB TRUE in the XDC) and leaves the chip at the
-    // same instant as the other SPI outputs.  sclk_nq holds the complement and is the
-    // copy the state machine reads back.  Because the two hold different values,
-    // synthesis cannot merge them.  No attribute is placed on the port register:
-    // with KEEP or DONT_TOUCH on it, Vivado reported that it no longer connected
-    // directly to the I/O cell and did not pack it.
     (* dont_touch = "true" *) reg sclk_nq;     // = ~dac_sclk
 
     localparam integer HALF = SCLK_DIV / 2;

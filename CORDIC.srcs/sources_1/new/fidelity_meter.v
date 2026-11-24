@@ -32,12 +32,6 @@ module fidelity_meter #(
     reg  [15:0] acc_peak;
     reg  [WLOG-1:0] cnt;
 
-    // ---- SNR estimate:  10 log10(sum_sig / sum_err)  without a divider ----
-    // log2 of each sum is taken as (position of the leading one) * 8 + the next
-    // three mantissa bits, i.e. log2 in units of 1/8 by linear interpolation.
-    // The sums only change once per window, so the estimate is computed in
-    // four registered steps (in the five clocks after a window ends) to keep
-    // every path short.
     function [5:0] lead1;                       // position of the leading one
         input [47:0] xx;
         integer kk;

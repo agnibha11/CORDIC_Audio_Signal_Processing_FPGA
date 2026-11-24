@@ -91,9 +91,6 @@ module capture_scope_ram #(
         end
     end
 
-    // ------------------------------------------------------------------
-    // true dual port RAM, 2048 x 48 (Vivado infers RAMB36)
-    // ------------------------------------------------------------------
     reg [47:0] ram [0:2047];
     wire        we_a   = in_valid && ((st == S_REC) || (st == S_ARM && trig));
     wire [10:0] addr_a = we_a ? {bank_wr, (st == S_ARM) ? 10'd0 : wr_idx} : vio_addr;

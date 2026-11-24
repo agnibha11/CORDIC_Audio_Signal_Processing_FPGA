@@ -96,9 +96,6 @@ module cordic_fm_system #(
     output wire [25:0] div_den,
     output wire        cordic_busy
 );
-    // ------------------------------------------------------------------
-    // sample clock
-    // ------------------------------------------------------------------
     reg [11:0] tick_cnt;
     reg        tick;
     always @(posedge clk) begin
@@ -114,9 +111,6 @@ module cordic_fm_system #(
     end
     assign sample_tick = tick;
 
-    // ------------------------------------------------------------------
-    // ADC -> front end
-    // ------------------------------------------------------------------
     wire        adc_valid;
     wire [11:0] adc_data;
     mic_adc_spi #(.SCLK_DIV(SCLK_DIV)) u_adc (
@@ -133,9 +127,6 @@ module cordic_fm_system #(
         .out_valid(fe_valid), .audio(fe_audio), .clip(fe_clip)
     );
 
-    // ------------------------------------------------------------------
-    // user interface
-    // ------------------------------------------------------------------
     kypd_scanner #(
         .SCAN_CLKS(KYPD_SCAN_CLKS), .DEBOUNCE_SCANS(KYPD_DEBOUNCE),
         .REPEAT_DELAY(KYPD_RPT_DELAY), .REPEAT_RATE(KYPD_RPT_RATE)
@@ -167,10 +158,6 @@ module cordic_fm_system #(
         .div_den(div_den), .params_changed(params_changed)
     );
 
-    // receiver gain: compute the reciprocal once after reset and again
-    // whenever the divisor changes (the parameters settle during reset, so
-    // no `params_changed` pulse follows it -- hence the pending flag is SET
-    // by reset)
     wire div_busy, div_done;
     reg  div_pending;
     wire div_start = div_pending & ~div_busy & ~div_done;
@@ -184,9 +171,6 @@ module cordic_fm_system #(
         .busy(div_busy), .done(div_done), .quot(gain_recip)
     );
 
-    // ------------------------------------------------------------------
-    // the radio link: transmitter, channel, receiver
-    // ------------------------------------------------------------------
     wire signed [15:0] s_sample, tone_sample;
     fm_dsp_core #(.W(24), .Z(24), .N(18)) u_dsp (
         .clk(clk), .rst(rst), .in_valid(fe_valid), .x_mic(fe_audio),
@@ -196,10 +180,6 @@ module cordic_fm_system #(
         .s_out(s_sample), .tone_out(tone_sample), .cordic_busy(cordic_busy)
     );
 
-    // ------------------------------------------------------------------
-    // monitor: what the listener hears (loudspeaker and DAC-B)
-    //   0 recovered audio   1 original audio   2 channel signal   3 error x4
-    // ------------------------------------------------------------------
     wire signed [16:0] err_w  = m_sample - mhat_sample;
     wire signed [18:0] err_x4 = {err_w, 2'b00};
     wire signed [15:0] err_s  = (err_x4 > 19'sd32767)  ? 16'sd32767 :
@@ -216,9 +196,6 @@ module cordic_fm_system #(
     end
     assign mon_sample = mon_r;
 
-    // ------------------------------------------------------------------
-    // Pmod DA2: channel A = channel signal, channel B = monitor
-    // ------------------------------------------------------------------
     reg dac_go;
     always @(posedge clk) dac_go <= out_valid & ~rst;          // one clock later: mon_r is up to date
     wire [11:0] dac_a = {~r_sample[15], r_sample[14:4]};       // Q15 -> offset binary
@@ -229,17 +206,11 @@ module cordic_fm_system #(
         .dac_sync_n(dac_sync_n), .dac_dina(dac_dina), .dac_dinb(dac_dinb), .dac_sclk(dac_sclk)
     );
 
-    // ------------------------------------------------------------------
-    // Pmod AMP2: sigma-delta bit stream of the monitor signal
-    // ------------------------------------------------------------------
     wire signed [15:0] spk_sample = mon_r >>> sw_spk_att;            // digital volume: 6 dB per step
     sd_dac #(.DIV(SD_DIV)) u_sd (.clk(clk), .rst(rst), .sample(spk_sample), .bit_out(amp_ain));
     assign amp_gain       = ~sw_spk_loud;
     assign amp_shutdown_n = ~sw_spk_mute & ~rst;
 
-    // ------------------------------------------------------------------
-    // analysis: fidelity meter and clip indicator
-    // ------------------------------------------------------------------
     fidelity_meter #(.WLOG(METER_WLOG)) u_meter (
         .clk(clk), .rst(rst), .in_valid(out_valid), .m(m_sample), .m_hat(mhat_sample),
         .sum_sig(sum_sig), .sum_err(sum_err), .peak_err(peak_err), .snr_db(snr_db), .window_done()
@@ -253,9 +224,6 @@ module cordic_fm_system #(
     end
     assign clip_sticky = (clip_cnt != 25'd0);
 
-    // ------------------------------------------------------------------
-    // storage + VGA scope
-    // ------------------------------------------------------------------
     wire        pix_en, active, hs_n, vs_n, vblank, frame_start;
     wire [9:0]  h, v;
     vga_timing u_vt (

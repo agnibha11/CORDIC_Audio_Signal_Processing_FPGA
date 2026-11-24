@@ -44,9 +44,6 @@ module vga_scope_render (
     output reg         vga_hs,
     output reg         vga_vs
 );
-    // ------------------------------------------------------------------
-    // geometry
-    // ------------------------------------------------------------------
     localparam [9:0] A_TOP = 10'd32,  A_BOT = 10'd191, A_MID = 10'd112;
     localparam [9:0] B_TOP = 10'd208, B_BOT = 10'd367, B_MID = 10'd288;
 
@@ -56,9 +53,6 @@ module vga_scope_render (
         pe2 <= pe1 & ~rst;
     end
 
-    // ------------------------------------------------------------------
-    // sample prefetch and conversion to screen heights
-    // ------------------------------------------------------------------
     function [9:0] ypos;                    // centre - value/512
         input [9:0]         centre;
         input signed [15:0] val;
@@ -96,17 +90,11 @@ module vga_scope_render (
     reg [9:0] ym_n, yo_n, ys_n;             // heights of the pixel about to be drawn
     reg [9:0] ym_p, yo_p, ys_p;             // heights of the previous pixel
 
-    // ------------------------------------------------------------------
-    // decimal read-outs (converted once per frame, in vertical blanking)
-    // ------------------------------------------------------------------
     wire        conv_start = pix_en && (h == 10'd0) && (v == 10'd500);
     reg  [7:0]  fm5_r;                      // fm = idx * 50 = (idx * 5) * 10
     reg  [12:0] bf_r;                       // beta_q * fm_idx (<= 127 * 40)
     reg  [19:0] dev10_r;                    // peak deviation in units of 0.1 Hz
     reg  [4:0]  cnr_r;                      // 31 - noise_idx
-    // Two register stages: the read-outs are converted once per frame, so the
-    // extra clock costs nothing, and the product chain no longer has to fit in
-    // one 10 ns cycle (it failed timing by 0.28 ns as a single stage).
     always @(posedge clk) begin
         fm5_r   <= fm_idx * 3'd5;
         bf_r    <= beta_q * fm_idx;
@@ -122,10 +110,6 @@ module vga_scope_render (
     bin2bcd #(.W(7),  .D(2)) u_b_snr (.clk(clk), .rst(rst), .start(conv_start), .bin(snr_db),  .bcd(snr_bcd));
     bin2bcd #(.W(5),  .D(2)) u_b_cnr (.clk(clk), .rst(rst), .start(conv_start), .bin(cnr_r),   .bcd(cnr_bcd));
 
-    // ------------------------------------------------------------------
-    // text layer: character code of the cell under (h, v)
-    // ------------------------------------------------------------------
-    // glyph code of an ASCII character (see scripts/gen_font.py)
     function [5:0] gc;
         input [7:0] a;
         begin
@@ -269,9 +253,6 @@ module vga_scope_render (
         endcase
     end
 
-    // ------------------------------------------------------------------
-    // pipeline
-    // ------------------------------------------------------------------
     wire in_a = (v >= A_TOP) && (v <= A_BOT);
     wire in_b = (v >= B_TOP) && (v <= B_BOT);
     wire [9:0] ym_q = (h == 10'd0) ? ym_n : ym_p;      // first pixel of a line has no predecessor

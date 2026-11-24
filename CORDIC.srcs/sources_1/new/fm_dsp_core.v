@@ -65,9 +65,6 @@ module fm_dsp_core #(
 
     reg  [4:0]          st;
 
-    // ------------------------------------------------------------------
-    // the shared CORDIC engine
-    // ------------------------------------------------------------------
     reg                 c_start, c_vec;
     reg  signed [W-1:0] c_x, c_y;
     reg         [Z-1:0] c_z;
@@ -82,9 +79,6 @@ module fm_dsp_core #(
         .x_out(c_xo), .y_out(c_yo), .z_out(c_zo)
     );
 
-    // ------------------------------------------------------------------
-    // the channel noise source (runs in parallel with jobs 1 and 2)
-    // ------------------------------------------------------------------
     wire               n_done;
     wire signed [18:0] n_i, n_q;
     reg                n_ready;
@@ -93,9 +87,6 @@ module fm_dsp_core #(
         .done(n_done), .ni(n_i), .nq(n_q)
     );
 
-    // ------------------------------------------------------------------
-    // audio filters: reference path and receiver path
-    // ------------------------------------------------------------------
     reg                lpf_en;
     reg  signed [19:0] mhat_raw;
     wire               lpf_valid, lpf_valid_ref;
@@ -104,10 +95,6 @@ module fm_dsp_core #(
     audio_lpf #(.IN_W(20)) u_lpf_ref (.clk(clk), .rst(rst), .en(lpf_en), .x({{4{m_r[15]}}, m_r}), .valid(lpf_valid_ref), .y(mref_f));
     audio_lpf #(.IN_W(20)) u_lpf_rx  (.clk(clk), .rst(rst), .en(lpf_en), .x(mhat_raw),            .valid(lpf_valid),     .y(mhat_f));
 
-    // ------------------------------------------------------------------
-    // helpers
-    // ------------------------------------------------------------------
-    // (v + 8) >>> 4, W-bit engine value -> Q15 (fits by construction for rotation results)
     function signed [15:0] rnd16;
         input signed [W-1:0] v;
         reg   signed [W-1:0] t;
@@ -135,9 +122,6 @@ module fm_dsp_core #(
         end
     endfunction
 
-    // ------------------------------------------------------------------
-    // datapath registers
-    // ------------------------------------------------------------------
     reg  signed [15:0]  x_mic_r, tone_r, src_r, i_r, q_r, s_r, env_r, r_r16;
     reg  signed [22:0]  gain_p;                    // 16 x 7
     reg         [31:0]  phi_m, phi_c, theta;
